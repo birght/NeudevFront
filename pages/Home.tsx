@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Rocket, 
   ArrowRight, 
@@ -10,7 +10,13 @@ import {
   Zap, 
   Star, 
   TrendingUp, 
-  Package 
+  Package,
+  Globe,
+  Trophy,
+  Palette,
+  MousePointer2,
+  Boxes,
+  Waves
 } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 import { translations } from '../translations';
@@ -18,172 +24,150 @@ import { translations } from '../translations';
 const Home: React.FC = () => {
   const { lang, theme } = useSettings();
   const t = translations[lang];
+  const navigate = useNavigate();
   
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [pulseIndex, setPulseIndex] = useState(0);
 
-  const personalStats = {
-    linesContributed: '12,450',
-    componentsCount: 14,
-    points: 2450,
-    copies: 382
-  };
+  const mockPulse = [
+    { user: 'Alex from Tokyo', action: 'contributed', target: 'Neumorphic Button' },
+    { user: 'Sarah from NYC', action: 'joined', target: 'Global Collective' },
+    { user: 'Ivan from Berlin', action: 'contributed', target: 'Glassmorphism Login' },
+    { user: 'Chen from Beijing', action: 'contributed', target: 'Bezier Curve Loader' },
+  ];
 
-  const teamStats = {
-    totalComponents: 156,
-    mostUsed: [
-      { name: 'Auth Modal', uses: 120, rating: 4.9 },
-      { name: 'Data Table Pro', uses: 98, rating: 4.7 },
-      { name: 'Sidebar Nav', uses: 85, rating: 4.8 }
-    ],
-    topRated: [
-      { name: 'Glass Card', rating: 5.0, category: 'UI' },
-      { name: 'Chart Suite', rating: 4.9, category: 'Data' }
-    ]
-  };
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setPulseIndex((prev) => (prev + 1) % mockPulse.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const matrixItems = [
+    { title: '动效艺术', icon: Waves, color: 'text-blue-500', bg: 'bg-blue-50', path: '/motion-art' },
+    { title: '极致布局', icon: Boxes, color: 'text-theme', bg: 'bg-theme/5', path: '/designs' },
+    { title: '交互实验室', icon: MousePointer2, color: 'text-emerald-500', bg: 'bg-emerald-50', path: '/components' },
+    { title: '视觉表现', icon: Palette, color: 'text-rose-500', bg: 'bg-rose-50', path: '/components' },
+  ];
 
   return (
     <div className="bg-white">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-slate-50 pt-20 pb-12 sm:pt-32">
-        <div className="absolute inset-y-0 w-full h-full bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
+      <div className="relative overflow-hidden bg-white pt-20 pb-12 sm:pt-28">
+        {/* 背景装饰：更灵动的极光式渐变 */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-[radial-gradient(circle_at_50%_0%,rgba(79,70,229,0.08)_0%,transparent_70%)]"></div>
+        <div className="absolute inset-y-0 w-full h-full bg-[radial-gradient(#e5e7eb_0.8px,transparent_0.8px)] [background-size:24px_24px] opacity-40 [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
+        
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-theme/10 text-theme rounded-full text-xs font-bold mb-8 transition-colors">
-            <Zap size={14} className="fill-current" />
-            <span>v2.5 Now Available with New Templates</span>
+          {/* 实时动态动脉 (The Pulse) */}
+          <div className="inline-flex items-center gap-3 px-4 py-2 bg-slate-50 border border-slate-200 rounded-2xl mb-10 animate-in fade-in slide-in-from-top-4 duration-1000">
+            <div className="relative flex items-center justify-center w-2 h-2">
+              <span className="absolute w-full h-full bg-theme rounded-full animate-ping opacity-75"></span>
+              <span className="relative w-2 h-2 bg-theme rounded-full"></span>
+            </div>
+            <div className="text-[11px] font-bold text-slate-500 overflow-hidden h-4 w-64 md:w-80 relative">
+               {mockPulse.map((p, i) => (
+                 <div key={i} className={`absolute inset-0 transition-all duration-700 flex items-center gap-1.5 ${i === pulseIndex ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
+                    <span className="text-slate-900">{p.user}</span>
+                    <span className="font-normal opacity-60">{p.action === 'joined' ? t.home.pulse.joined : t.home.pulse.contributed}</span>
+                    <span className="text-theme font-black">{p.target}</span>
+                 </div>
+               ))}
+            </div>
           </div>
           
-          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-7xl mb-6">
+          <h1 className="text-5xl font-[900] tracking-tighter text-slate-900 sm:text-7xl mb-8 leading-[1.1]">
             {t.home.hero.title}
           </h1>
-          <p className="mx-auto max-w-2xl text-lg text-slate-600 mb-10 leading-relaxed">
+          <p className="mx-auto max-w-2xl text-lg text-slate-500 mb-12 font-medium leading-relaxed">
             {t.home.hero.subtitle}
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-16">
-            <Link to="/components" className="group flex items-center justify-center gap-2 px-8 py-4 bg-theme text-white font-bold rounded-2xl hover:bg-theme-dark transition-all shadow-xl shadow-theme/30 transform hover:-translate-y-1">
+          
+          <div className="flex flex-col sm:flex-row justify-center gap-5 mb-20">
+            <Link to="/components" className="group flex items-center justify-center gap-3 px-10 py-5 bg-theme text-white font-black rounded-2xl hover:bg-theme-dark transition-all shadow-[0_20px_40px_-10px_rgba(79,70,229,0.3)] transform hover:-translate-y-1">
               <Rocket size={20} className="group-hover:rotate-12 transition-transform" />
               {t.home.btn.browse}
               <ArrowRight size={18} />
             </Link>
             <button 
-              onClick={() => setIsLoggedIn(!isLoggedIn)}
-              className="px-8 py-4 bg-white text-slate-700 border border-slate-200 font-bold rounded-2xl hover:bg-slate-50 transition-all hover:shadow-lg"
+              onClick={() => navigate('/login')}
+              className="group flex items-center justify-center gap-3 px-10 py-5 bg-white text-slate-900 border border-slate-200 font-black rounded-2xl hover:bg-slate-50 transition-all hover:shadow-xl transform hover:-translate-y-1"
             >
-              {isLoggedIn ? t.home.btn.logoutDemo : t.home.btn.loginDemo}
+              <Globe size={20} className="text-slate-400 group-hover:text-theme transition-colors" />
+              {t.home.btn.join}
             </button>
           </div>
 
-          {/* Monitoring Panel */}
-          <div className="max-w-5xl mx-auto">
-            <div className="bg-white rounded-[2rem] shadow-2xl shadow-slate-200/60 border border-slate-100 overflow-hidden transform hover:scale-[1.01] transition-transform duration-500">
-              <div className="bg-theme px-8 py-4 flex justify-between items-center transition-colors">
-                <span className="text-white text-sm font-bold tracking-wider uppercase flex items-center gap-3">
-                  <div className="flex gap-1">
-                    <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
-                    <span className="w-1.5 h-1.5 bg-emerald-400/50 rounded-full"></span>
+          {/* 快捷灵感矩阵 */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto mb-20 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-300">
+             {matrixItems.map((item, idx) => (
+               <div 
+                 key={idx} 
+                 onClick={() => navigate(item.path)}
+                 className="group p-6 bg-white border border-slate-100 rounded-3xl hover:border-theme/30 transition-all hover:shadow-2xl hover:shadow-theme/5 cursor-pointer text-left"
+               >
+                  <div className={`w-12 h-12 ${item.bg} ${item.color} rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 group-hover:rotate-3`}>
+                    <item.icon size={24} />
                   </div>
-                  {isLoggedIn ? t.home.monitor.personal : t.home.monitor.team}
-                </span>
-                <span className="text-white/80 text-xs font-bold flex items-center gap-2">
-                   <TrendingUp size={14} />
-                   {t.home.monitor.realtime}
-                </span>
-              </div>
-              
-              <div className="p-10">
-                {isLoggedIn ? (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-12">
-                    <div className="text-center group">
-                      <div className="text-4xl font-black text-slate-900 group-hover:text-theme transition-colors">{personalStats.linesContributed}</div>
-                      <div className="text-[10px] text-slate-400 font-extrabold uppercase mt-2 tracking-widest">{t.home.monitor.codeLines}</div>
-                    </div>
-                    <div className="text-center border-l border-slate-100 group">
-                      <div className="text-4xl font-black text-slate-900 group-hover:text-theme transition-colors">{personalStats.componentsCount}</div>
-                      <div className="text-[10px] text-slate-400 font-extrabold uppercase mt-2 tracking-widest">{t.home.monitor.components}</div>
-                    </div>
-                    <div className="text-center border-l border-slate-100 group">
-                      <div className="text-4xl font-black text-theme transition-colors animate-float">{personalStats.points}</div>
-                      <div className="text-[10px] text-slate-400 font-extrabold uppercase mt-2 tracking-widest">{t.home.monitor.points}</div>
-                    </div>
-                    <div className="text-center border-l border-slate-100 group">
-                      <div className="text-4xl font-black text-slate-900 group-hover:text-theme transition-colors">{personalStats.copies}</div>
-                      <div className="text-[10px] text-slate-400 font-extrabold uppercase mt-2 tracking-widest">{t.home.monitor.downloads}</div>
-                    </div>
+                  <h4 className="font-black text-slate-900 text-sm tracking-tight">{item.title}</h4>
+                  <div className="mt-4 flex items-center gap-1.5 text-[10px] font-bold text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                    进入详情 <ArrowRight size={12} />
                   </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-12 items-center">
-                    <div className="text-center md:text-left">
-                      <div className="flex items-center gap-3 mb-2 justify-center md:justify-start">
-                         <Package className="text-theme" size={32} />
-                         <span className="text-5xl font-black text-theme transition-colors tracking-tighter">{teamStats.totalComponents}</span>
+               </div>
+             ))}
+          </div>
+
+          {/* 每周工艺挑战 */}
+          <div className="max-w-5xl mx-auto mb-20">
+             <div className="relative group overflow-hidden bg-slate-900 rounded-[2.5rem] p-10 md:p-14 text-left">
+                {/* 装饰光束 */}
+                <div className="absolute top-0 right-0 w-96 h-96 bg-theme rounded-full blur-[120px] opacity-20 translate-x-1/2 -translate-y-1/2"></div>
+                
+                <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-10">
+                   <div className="flex-grow">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-theme text-[10px] font-black uppercase tracking-widest mb-6">
+                        <Trophy size={14} /> Global Arena
                       </div>
-                      <div className="text-sm text-slate-500 font-semibold mt-1 tracking-tight">{t.home.monitor.totalComps}</div>
-                      <Link to="/admin" className="inline-flex items-center gap-1 mt-6 text-xs font-black text-theme hover:underline uppercase transition-all hover:gap-2">
-                        {t.home.monitor.contribute}
-                      </Link>
-                    </div>
-                    
-                    <div className="col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      <div className="bg-slate-50/50 rounded-3xl p-6 text-left border border-slate-100 hover:bg-white transition-all">
-                        <div className="flex items-center gap-2 mb-4">
-                           <TrendingUp size={16} className="text-theme" />
-                           <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.home.monitor.trending}</h4>
-                        </div>
-                        <div className="space-y-4">
-                          {teamStats.mostUsed.map((item, idx) => (
-                            <div key={idx} className="flex justify-between items-center text-sm">
-                              <span className="text-slate-700 font-bold">{item.name}</span>
-                              <span className="text-[10px] bg-white px-2.5 py-1 rounded-full border border-slate-200 text-slate-500 font-bold">{item.uses}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="bg-slate-50/50 rounded-3xl p-6 text-left border border-slate-100 hover:bg-white transition-all">
-                        <div className="flex items-center gap-2 mb-4">
-                           <Star size={16} className="text-amber-500 fill-amber-500" />
-                           <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.home.monitor.topRated}</h4>
-                        </div>
-                        <div className="space-y-4">
-                          {teamStats.topRated.map((item, idx) => (
-                            <div key={idx} className="flex justify-between items-center text-sm">
-                              <span className="text-slate-700 font-bold">{item.name}</span>
-                              <div className="flex items-center gap-1 font-black text-amber-500 text-xs">
-                                 {item.rating}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
+                      <h2 className="text-3xl md:text-4xl font-black text-white mb-4 tracking-tight">
+                        {t.home.sections.challenge.title}
+                      </h2>
+                      <p className="text-slate-400 font-medium max-w-md">
+                        {t.home.sections.challenge.subtitle}
+                        <br/><span className="text-theme">本周主题：极端动效加载 (Extreme Motion Loaders)</span>
+                      </p>
+                   </div>
+                   <button className="shrink-0 px-10 py-5 bg-theme text-white font-black rounded-2xl hover:bg-theme-dark transition-all shadow-2xl shadow-theme/30 flex items-center gap-3">
+                      {t.home.sections.challenge.join} <ArrowRight size={20} />
+                   </button>
+                </div>
+             </div>
           </div>
         </div>
       </div>
 
-      {/* Feature Value Props */}
-      <div className="max-w-7xl mx-auto px-4 py-24 grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-         <div className="flex flex-col items-center">
-            <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mb-6 shadow-sm">
-               <ShieldCheck size={32} />
+      {/* Feature Value Props (Enterprise) */}
+      <div className="max-w-7xl mx-auto px-4 py-24 border-t border-slate-50">
+         <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
+            <div className="flex flex-col items-center md:items-start text-center md:text-left group">
+               <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 shadow-sm group-hover:bg-theme group-hover:text-white transition-all duration-500 group-hover:rotate-6">
+                  <ShieldCheck size={28} />
+               </div>
+               <h3 className="text-xl font-black text-slate-900 mb-3 tracking-tight">组织级审计</h3>
+               <p className="text-slate-500 text-sm leading-relaxed font-medium">每一行代码都经过技术委员会的安全、无障碍与性能审计，确保开箱即用。</p>
             </div>
-            <h3 className="text-xl font-bold mb-3">Enterprise Grade</h3>
-            <p className="text-slate-500 text-sm leading-relaxed">Every piece of code is audited for security, accessibility, and performance by our internal team.</p>
-         </div>
-         <div className="flex flex-col items-center">
-            <div className="w-16 h-16 bg-theme/10 text-theme rounded-3xl flex items-center justify-center mb-6 shadow-sm transition-colors">
-               <Users size={32} />
+            <div className="flex flex-col items-center md:items-start text-center md:text-left group">
+               <div className="w-14 h-14 bg-theme/10 text-theme rounded-2xl flex items-center justify-center mb-6 shadow-sm group-hover:bg-theme group-hover:text-white transition-all duration-500 group-hover:rotate-6">
+                  <Users size={28} />
+               </div>
+               <h3 className="text-xl font-black text-slate-900 mb-3 tracking-tight">开发者共建</h3>
+               <p className="text-slate-500 text-sm leading-relaxed font-medium">为开发者打造，由开发者共建。贡献你的艺术代码，在全公司范围内获得身份认可。</p>
             </div>
-            <h3 className="text-xl font-bold mb-3">Collaborative</h3>
-            <p className="text-slate-500 text-sm leading-relaxed">Built by developers for developers. Contribute your own components and get recognized across the company.</p>
-         </div>
-         <div className="flex flex-col items-center">
-            <div className="w-16 h-16 bg-amber-50 text-amber-600 rounded-3xl flex items-center justify-center mb-6 shadow-sm">
-               <Layout size={32} />
+            <div className="flex flex-col items-center md:items-start text-center md:text-left group">
+               <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mb-6 shadow-sm group-hover:bg-amber-600 group-hover:text-white transition-all duration-500 group-hover:rotate-6">
+                  <Layout size={28} />
+               </div>
+               <h3 className="text-xl font-black text-slate-900 mb-3 tracking-tight">原子化设计</h3>
+               <p className="text-slate-500 text-sm leading-relaxed font-medium">严格遵循原子化设计原则，确保每一个组件在任何项目中都具有极高的组合性。</p>
             </div>
-            <h3 className="text-xl font-bold mb-3">Modular Design</h3>
-            <p className="text-slate-500 text-sm leading-relaxed">Atomic design principles ensure that every component is highly composable and customizable for any project.</p>
          </div>
       </div>
     </div>

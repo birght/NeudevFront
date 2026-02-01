@@ -8,6 +8,7 @@ import Components from './pages/Components';
 import Designs from './pages/Designs';
 import AdminDashboard from './pages/AdminDashboard';
 import Login from './pages/Login';
+import MotionArt from './pages/MotionArt';
 import { UserRole } from './types';
 import { SettingsProvider } from './context/SettingsContext';
 
@@ -46,6 +47,7 @@ const App: React.FC = () => {
               <Route path="/doces/introduction" element={<Documentation />} />
               <Route path="/components" element={<Components />} />
               <Route path="/designs" element={<Designs />} />
+              <Route path="/motion-art" element={<MotionArt />} />
               <Route path="/admin" element={<AdminDashboard userRole={userRole} />} />
               <Route path="/login" element={<Login onLogin={handleLogin} isLoggedIn={isLoggedIn} />} />
               <Route path="*" element={<Navigate to="/" />} />
