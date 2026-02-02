@@ -44,7 +44,7 @@ const Home: React.FC = () => {
 
   const matrixItems = [
     { title: '动效艺术', icon: Waves, color: 'text-blue-500', bg: 'bg-blue-50', path: '/motion-art' },
-    { title: '极致布局', icon: Boxes, color: 'text-theme', bg: 'bg-theme/5', path: '/designs' },
+    { title: '极致布局', icon: Boxes, color: 'text-theme', bg: 'bg-theme/5', path: '/ultimate-layouts' },
     { title: '交互实验室', icon: MousePointer2, color: 'text-emerald-500', bg: 'bg-emerald-50', path: '/components' },
     { title: '视觉表现', icon: Palette, color: 'text-rose-500', bg: 'bg-rose-50', path: '/components' },
   ];
@@ -163,7 +163,7 @@ const Home: React.FC = () => {
             </div>
             <div className="flex flex-col items-center md:items-start text-center md:text-left group">
                <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mb-6 shadow-sm group-hover:bg-amber-600 group-hover:text-white transition-all duration-500 group-hover:rotate-6">
-                  <Layout size={28} />
+                  <Boxes size={28} />
                </div>
                <h3 className="text-xl font-black text-slate-900 mb-3 tracking-tight">原子化设计</h3>
                <p className="text-slate-500 text-sm leading-relaxed font-medium">严格遵循原子化设计原则，确保每一个组件在任何项目中都具有极高的组合性。</p>

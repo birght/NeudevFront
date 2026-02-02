@@ -9,6 +9,7 @@ import Designs from './pages/Designs';
 import AdminDashboard from './pages/AdminDashboard';
 import Login from './pages/Login';
 import MotionArt from './pages/MotionArt';
+import UltimateLayouts from './pages/UltimateLayouts';
 import { UserRole } from './types';
 import { SettingsProvider } from './context/SettingsContext';
 
@@ -48,6 +49,7 @@ const App: React.FC = () => {
               <Route path="/components" element={<Components />} />
               <Route path="/designs" element={<Designs />} />
               <Route path="/motion-art" element={<MotionArt />} />
+              <Route path="/ultimate-layouts" element={<UltimateLayouts />} />
               <Route path="/admin" element={<AdminDashboard userRole={userRole} />} />
               <Route path="/login" element={<Login onLogin={handleLogin} isLoggedIn={isLoggedIn} />} />
               <Route path="*" element={<Navigate to="/" />} />
