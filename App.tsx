@@ -10,6 +10,8 @@ import AdminDashboard from './pages/AdminDashboard';
 import Login from './pages/Login';
 import MotionArt from './pages/MotionArt';
 import UltimateLayouts from './pages/UltimateLayouts';
+import InteractionLab from './pages/InteractionLab';
+import VisualExpression from './pages/VisualExpression';
 import { UserRole } from './types';
 import { SettingsProvider } from './context/SettingsContext';
 
@@ -50,6 +52,8 @@ const App: React.FC = () => {
               <Route path="/designs" element={<Designs />} />
               <Route path="/motion-art" element={<MotionArt />} />
               <Route path="/ultimate-layouts" element={<UltimateLayouts />} />
+              <Route path="/interaction-lab" element={<InteractionLab />} />
+              <Route path="/visual-expression" element={<VisualExpression />} />
               <Route path="/admin" element={<AdminDashboard userRole={userRole} />} />
               <Route path="/login" element={<Login onLogin={handleLogin} isLoggedIn={isLoggedIn} />} />
               <Route path="*" element={<Navigate to="/" />} />

@@ -45,8 +45,8 @@ const Home: React.FC = () => {
   const matrixItems = [
     { title: '动效艺术', icon: Waves, color: 'text-blue-500', bg: 'bg-blue-50', path: '/motion-art' },
     { title: '极致布局', icon: Boxes, color: 'text-theme', bg: 'bg-theme/5', path: '/ultimate-layouts' },
-    { title: '交互实验室', icon: MousePointer2, color: 'text-emerald-500', bg: 'bg-emerald-50', path: '/components' },
-    { title: '视觉表现', icon: Palette, color: 'text-rose-500', bg: 'bg-rose-50', path: '/components' },
+    { title: '交互实验室', icon: MousePointer2, color: 'text-emerald-500', bg: 'bg-emerald-50', path: '/interaction-lab' },
+    { title: '视觉表现', icon: Palette, color: 'text-rose-500', bg: 'bg-rose-50', path: '/visual-expression' },
   ];
 
   return (
