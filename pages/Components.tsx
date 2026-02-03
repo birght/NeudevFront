@@ -7,10 +7,10 @@ import {
   Factory, GraduationCap, Building2, ShieldCheck, Leaf, 
   Wallet, CarFront, MonitorPlay, Filter,
   Stethoscope, Landmark, Scale, ShieldAlert, Cpu, 
-  Tags, LayoutGrid, Palette, ChevronRight
+  Tags, LayoutGrid, Palette, ChevronRight, ChevronDown, ChevronUp, SlidersHorizontal, RotateCcw
 } from 'lucide-react';
 
-// 1. 行业维度 (基于截图完整还原)
+// 1. 行业维度
 const industries = [
   { id: 'medical', name: '医疗健康', icon: HeartPulse, color: 'text-blue-500', bg: 'bg-blue-50' },
   { id: 'telecom', name: '通信', icon: Radio, color: 'text-indigo-500', bg: 'bg-indigo-50' },
@@ -28,7 +28,22 @@ const industries = [
   { id: 'food-safety', name: '食药安全', icon: ShieldAlert, color: 'text-orange-600', bg: 'bg-orange-50' }
 ];
 
-// 2. 场景维度
+// 2. 功能分类维度
+const categories = [
+  { id: 'all', name: '全部功能', icon: Sparkles },
+  { id: 'Layout', name: '布局 (Layout)', icon: Layout },
+  { id: 'Navigation', name: '导航 (Navigation)', icon: Map },
+  { id: 'Data Entry', name: '录入 (Data Entry)', icon: Keyboard },
+  { id: 'Data Display', name: '展示 (Data Display)', icon: Database },
+  { id: 'Feedback', name: '反馈 (Feedback)', icon: MessageSquare },
+  { id: 'Overlay', name: '遮罩 (Overlay)', icon: Layers },
+  { id: 'Media', name: '媒体 (Media)', icon: MonitorPlay },
+  { id: 'Charts & Visualization', name: '图表 (Charts)', icon: BarChart3 },
+  { id: 'Utilities', name: '工具 (Utilities)', icon: Zap },
+  { id: 'Advanced / Labs', name: '实验室 (Labs)', icon: FlaskConical }
+];
+
+// 3. 场景维度
 const scenarios = [
   { id: 'all', name: '全部场景' },
   { id: 'admin', name: '管理后台' },
@@ -37,7 +52,7 @@ const scenarios = [
   { id: 'portal', name: '门户官网' }
 ];
 
-// 3. 调性维度 (取代国家，转向审美风格)
+// 4. 调性维度
 const tones = [
   { id: 'all', name: '全部调性' },
   { id: 'standard', name: '国企稳重 (Corporate)' },
@@ -47,19 +62,35 @@ const tones = [
 
 const Components: React.FC = () => {
   const [selectedIndustry, setSelectedIndustry] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedScenario, setSelectedScenario] = useState('all');
   const [selectedTone, setSelectedTone] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isExpanded, setIsExpanded] = useState(false);
   const [selectedComp, setSelectedComp] = useState<any>(null);
   const [copied, setCopied] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  // 预设组件数据 (包含行业标签组合)
+  const activeAdvancedCount = [
+    selectedCategory !== 'all',
+    selectedScenario !== 'all',
+    selectedTone !== 'all'
+  ].filter(Boolean).length;
+
+  const resetFilters = () => {
+    setSelectedIndustry('all');
+    setSelectedCategory('all');
+    setSelectedScenario('all');
+    setSelectedTone('all');
+    setSearchQuery('');
+  };
+
   const components = [
     { 
       id: 'c-1', 
       name: '政务通 - 综合审批流面板', 
       industry: 'dev-reform', 
+      category: 'Data Display',
       scenario: 'admin',
       tone: 'standard',
       description: '为发改/政务部门设计的标准审批工作台，支持多级会签展示与状态流转。', 
@@ -95,6 +126,7 @@ render(<GovWorkflow />);`
       id: 'c-2', 
       name: '医疗云 - 患者心电监测组件', 
       industry: 'medical', 
+      category: 'Charts & Visualization',
       scenario: 'dashboard',
       tone: 'modern',
       description: '动态心率与血氧实时展示，采用柔和配色减少视觉疲劳，适配智慧医疗监护屏。', 
@@ -125,6 +157,7 @@ render(<HeartMonitor />);`
       id: 'c-3', 
       name: '智慧交通 - 路口流量热力矩阵', 
       industry: 'traffic', 
+      category: 'Charts & Visualization',
       scenario: 'dashboard',
       tone: 'dark-tech',
       description: '深色调多维度网格，利用热力色块展示交通流量密集度，常用于城市大脑可视化。', 
@@ -136,6 +169,7 @@ render(<HeartMonitor />);`
 
   const filteredComponents = components.filter(c => 
     (selectedIndustry === 'all' || c.industry === selectedIndustry) &&
+    (selectedCategory === 'all' || c.category === selectedCategory) &&
     (selectedScenario === 'all' || c.scenario === selectedScenario) &&
     (selectedTone === 'all' || c.tone === selectedTone) &&
     (c.name.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -181,7 +215,6 @@ render(<HeartMonitor />);`
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      {/* 顶部介绍区 */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-8">
         <div>
           <div className="flex items-center gap-3 mb-2">
@@ -197,7 +230,7 @@ render(<HeartMonitor />);`
         <div className="relative group w-full md:w-96">
           <input
             type="text"
-            placeholder="在 14 个行业解决方案中搜索..."
+            placeholder="在全行业解决方案中搜索..."
             className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-[1.5rem] focus:ring-4 focus:ring-theme/10 transition-all outline-none font-bold text-sm shadow-sm"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -206,13 +239,39 @@ render(<HeartMonitor />);`
         </div>
       </div>
 
-      {/* 核心筛选矩阵 */}
+      {/* 筛选面板 */}
       <div className="bg-white rounded-[2.5rem] border border-slate-100 p-8 shadow-2xl shadow-slate-200/40 mb-12">
-        {/* 行业标签云 (基于截图) */}
-        <div className="mb-10">
-          <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] block mb-6 flex items-center gap-2">
-            <Briefcase size={12} /> 业务行业 (Industry)
-          </label>
+        {/* 1. 行业标签云 (始终可见) */}
+        <div className={isExpanded ? 'mb-10' : 'mb-0 transition-all'}>
+          <div className="flex justify-between items-center mb-6">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-2">
+              <Briefcase size={12} /> 1. 业务行业 (Industry)
+            </label>
+            <div className="flex items-center gap-3">
+               <button 
+                 onClick={resetFilters}
+                 className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-black text-slate-400 hover:text-theme transition-colors"
+               >
+                 <RotateCcw size={12} /> 重置所有
+               </button>
+               <button 
+                 onClick={() => setIsExpanded(!isExpanded)}
+                 className={`flex items-center gap-2 px-4 py-1.5 rounded-xl text-[10px] font-black transition-all border ${
+                   isExpanded || activeAdvancedCount > 0 
+                   ? 'bg-theme/5 border-theme/20 text-theme' 
+                   : 'bg-slate-50 border-slate-100 text-slate-500 hover:border-slate-300'
+                 }`}
+               >
+                 <SlidersHorizontal size={12} />
+                 {isExpanded ? '收起高级筛选' : '高级筛选'}
+                 {activeAdvancedCount > 0 && !isExpanded && (
+                   <span className="w-4 h-4 bg-theme text-white rounded-full flex items-center justify-center text-[8px] animate-in zoom-in">{activeAdvancedCount}</span>
+                 )}
+                 {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+               </button>
+            </div>
+          </div>
+          
           <div className="flex flex-wrap gap-2 md:gap-3">
              <button
                onClick={() => setSelectedIndustry('all')}
@@ -239,51 +298,77 @@ render(<HeartMonitor />);`
           </div>
         </div>
 
-        {/* 二级联动筛选 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-slate-50">
-           {/* 场景筛选 */}
-           <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] block mb-4 flex items-center gap-2">
-                <Layout size={12} /> 应用场景 (Scenario)
+        {/* 可折叠的 2, 3, 4 维度 */}
+        {isExpanded && (
+          <div className="animate-in fade-in slide-in-from-top-4 duration-300">
+            {/* 2. 功能分类标签 */}
+            <div className="mb-10 pt-8 border-t border-slate-50">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] block mb-6 flex items-center gap-2">
+                <Tags size={12} /> 2. 功能类别 (Category)
               </label>
-              <div className="flex flex-wrap gap-2">
-                {scenarios.map(s => (
-                  <button 
-                    key={s.id} 
-                    onClick={() => setSelectedScenario(s.id)}
-                    className={`px-4 py-2 rounded-xl text-[11px] font-black transition-all ${
-                      selectedScenario === s.id ? 'bg-theme text-white shadow-lg shadow-theme/20' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
-                    }`}
-                  >
-                    {s.name}
-                  </button>
-                ))}
+              <div className="flex flex-wrap gap-2 md:gap-3">
+                 {categories.map((cat) => (
+                   <button
+                     key={cat.id}
+                     onClick={() => setSelectedCategory(cat.id)}
+                     className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-black transition-all border ${
+                       selectedCategory === cat.id 
+                       ? 'bg-theme text-white border-transparent shadow-lg' 
+                       : 'bg-slate-50 text-slate-500 border-slate-100 hover:bg-white hover:border-slate-300'
+                     }`}
+                   >
+                     <cat.icon size={14} />
+                     {cat.name}
+                   </button>
+                 ))}
               </div>
-           </div>
+            </div>
 
-           {/* 调性筛选 */}
-           <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] block mb-4 flex items-center gap-2">
-                <Palette size={12} /> 视觉调性 (Design Tone)
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {tones.map(t => (
-                  <button 
-                    key={t.id} 
-                    onClick={() => setSelectedTone(t.id)}
-                    className={`px-4 py-2 rounded-xl text-[11px] font-black transition-all ${
-                      selectedTone === t.id ? 'bg-slate-900 text-white shadow-lg' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
-                    }`}
-                  >
-                    {t.name}
-                  </button>
-                ))}
-              </div>
-           </div>
-        </div>
+            {/* 3 & 4. 场景与调性 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-slate-50">
+               <div>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] block mb-4 flex items-center gap-2">
+                    <Layout size={12} /> 3. 应用场景 (Scenario)
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {scenarios.map(s => (
+                      <button 
+                        key={s.id} 
+                        onClick={() => setSelectedScenario(s.id)}
+                        className={`px-4 py-2 rounded-xl text-[11px] font-black transition-all ${
+                          selectedScenario === s.id ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
+                        }`}
+                      >
+                        {s.name}
+                      </button>
+                    ))}
+                  </div>
+               </div>
+
+               <div>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] block mb-4 flex items-center gap-2">
+                    <Palette size={12} /> 4. 设计调性 (Design Tone)
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {tones.map(t => (
+                      <button 
+                        key={t.id} 
+                        onClick={() => setSelectedTone(t.id)}
+                        className={`px-4 py-2 rounded-xl text-[11px] font-black transition-all ${
+                          selectedTone === t.id ? 'bg-slate-900 text-white shadow-lg' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
+                        }`}
+                      >
+                        {t.name}
+                      </button>
+                    ))}
+                  </div>
+               </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* 组件列表展示 */}
+      {/* 列表区域 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {filteredComponents.map((comp) => {
           const industryInfo = industries.find(i => i.id === comp.industry) || industries[0];
@@ -293,21 +378,14 @@ render(<HeartMonitor />);`
               onClick={() => setSelectedComp(comp)}
               className="group relative bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden hover:shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] transition-all duration-500 hover:-translate-y-2 cursor-pointer"
             >
-              {/* 动态行业氛围背景 */}
               <div className={`h-52 ${industryInfo.bg} flex items-center justify-center relative overflow-hidden transition-colors duration-700`}>
                 <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:24px_24px]"></div>
-                
-                {/* 投影装饰 */}
                 <div className={`absolute inset-0 flex items-center justify-center ${industryInfo.color} opacity-[0.04] scale-[4] rotate-12 group-hover:rotate-[20deg] group-hover:scale-[4.5] transition-transform duration-1000`}>
                    <industryInfo.icon size={64} />
                 </div>
-
-                {/* 中央图标 */}
                 <div className={`relative z-10 ${industryInfo.color} transition-all duration-700 group-hover:scale-110`}>
                    <industryInfo.icon size={56} strokeWidth={1.5} />
                 </div>
-
-                {/* 行业徽章 */}
                 <div className="absolute bottom-4 left-4 flex items-center gap-1.5 px-3 py-1 bg-white/90 backdrop-blur rounded-full border border-white shadow-sm transition-all group-hover:shadow-md">
                    <industryInfo.icon size={10} className={industryInfo.color} />
                    <span className="text-[9px] font-black uppercase text-slate-500 tracking-tighter">{industryInfo.name}</span>
@@ -315,12 +393,9 @@ render(<HeartMonitor />);`
               </div>
 
               <div className="p-8">
-                <div className="flex justify-between items-center mb-4">
-                  <div className="flex gap-2">
-                    <span className="text-[9px] font-black text-theme uppercase bg-theme/10 px-3 py-1 rounded-full tracking-widest">{comp.scenario}</span>
-                    <span className="text-[9px] font-black text-slate-500 uppercase bg-slate-100 px-3 py-1 rounded-full tracking-widest">{comp.tone}</span>
-                  </div>
-                  <span className="text-[10px] text-slate-400 font-black flex items-center gap-1 uppercase tracking-tighter"><Download size={12} /> {comp.downloads} 次复用</span>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <span className="text-[9px] font-black text-theme uppercase bg-theme/10 px-3 py-1 rounded-full tracking-widest">{comp.category}</span>
+                  <span className="text-[9px] font-black text-slate-500 uppercase bg-slate-100 px-3 py-1 rounded-full tracking-widest">{comp.scenario}</span>
                 </div>
                 <h3 className="text-xl font-black text-slate-900 mb-2 group-hover:text-theme transition-colors tracking-tight">{comp.name}</h3>
                 <p className="text-sm text-slate-500 leading-relaxed line-clamp-2 font-medium">{comp.description}</p>
@@ -347,12 +422,11 @@ render(<HeartMonitor />);`
                 <Search size={48} />
              </div>
              <h3 className="text-xl font-black text-slate-900 tracking-tight">暂无匹配组件</h3>
-             <p className="text-slate-500 font-medium mt-2">请尝试调整筛选组合，或在管理后台发起新的行业投稿。</p>
+             <p className="text-slate-500 font-medium mt-2">请尝试调整筛选组合。</p>
           </div>
         )}
       </div>
 
-      {/* 详情浮层 (Drawer) */}
       {selectedComp && (
         <>
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[60]" onClick={() => setSelectedComp(null)}></div>
@@ -360,11 +434,8 @@ render(<HeartMonitor />);`
             <div className="p-8 border-b border-slate-50 flex justify-between items-center">
               <div>
                 <h2 className="text-2xl font-black text-slate-900 tracking-tight">{selectedComp.name}</h2>
-                <div className="flex items-center gap-3 mt-1">
-                   <span className="text-xs text-slate-400 font-bold uppercase tracking-widest">业务领域:</span>
-                   <span className="text-xs font-black text-theme bg-theme/5 px-2 py-0.5 rounded border border-theme/10">
-                     {industries.find(i => i.id === selectedComp.industry)?.name}
-                   </span>
+                <div className="flex items-center gap-3 mt-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                   {industries.find(i => i.id === selectedComp.industry)?.name} / {selectedComp.category}
                 </div>
               </div>
               <button onClick={() => setSelectedComp(null)} className="p-3 hover:bg-slate-50 rounded-2xl transition-all text-slate-400">
@@ -376,7 +447,6 @@ render(<HeartMonitor />);`
               <div className="mb-10">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-4">场景化仿真渲染</label>
                 <div className="h-80 bg-slate-50 rounded-[2.5rem] border border-slate-100 overflow-hidden shadow-inner flex items-center justify-center relative">
-                   <div className="absolute top-4 right-4 text-[9px] font-black text-slate-300 uppercase">Live Sandbox</div>
                    <iframe ref={iframeRef} className="w-full h-full border-none" title="drawer-preview" />
                 </div>
               </div>
@@ -401,21 +471,17 @@ render(<HeartMonitor />);`
                    <Sparkles size={20} />
                 </div>
                 <div>
-                   <h4 className="font-black text-blue-900 tracking-tight">行业逻辑说明</h4>
+                   <h4 className="font-black text-blue-900 tracking-tight">业务逻辑说明</h4>
                    <p className="text-sm text-blue-700/80 mt-1 leading-relaxed font-medium">
-                     此组件已针对该行业特定的业务场景（如高频交互、低延迟数据刷新）进行了性能优化。
-                     内部默认集成了行业常用的颜色变量（如 Medical-Safe-Blue）。
+                     该组件属于 {selectedComp.category} 类别，已针对 {industries.find(i => i.id === selectedComp.industry)?.name} 行业进行了性能与视觉优化。
                    </p>
                 </div>
               </div>
             </div>
 
             <div className="p-8 border-t border-slate-50 bg-slate-50/50 flex gap-4">
-              <button className="flex-1 py-4.5 bg-theme text-white font-black rounded-2xl shadow-2xl shadow-theme/30 hover:bg-theme-dark transition-all active:scale-[0.98]">
+              <button className="flex-1 py-4.5 bg-theme text-white font-black rounded-2xl shadow-2xl shadow-theme/30 hover:bg-theme-dark transition-all">
                  一键导入到项目
-              </button>
-              <button className="px-8 py-4.5 bg-white text-slate-600 border border-slate-200 font-black rounded-2xl hover:bg-slate-50 transition-all">
-                 查看源码库
               </button>
             </div>
           </div>
