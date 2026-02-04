@@ -2,7 +2,9 @@
 import { 
   ComponentSubmission, 
   ComponentSubmissionOverview, 
-  ComponentSubmissionTrendPoint 
+  ComponentSubmissionTrendPoint,
+  UserProfile,
+  UserRole
 } from '../types';
 
 // 模拟 API 响应
@@ -23,6 +25,14 @@ const mockSubmissions: ComponentSubmission[] = [
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   }
+];
+
+const mockUsers: UserProfile[] = [
+  { id: '1', name: 'Alex Rivera', email: 'admin@devfront.com', role: UserRole.ADMIN, points: 2500, level: 'Master', avatarSeed: 'Alex', joinedAt: '2024-01-15', submissionCount: 45, lastActive: '2分钟前' },
+  { id: '2', name: 'Sarah Chen', email: 'author@devfront.com', role: UserRole.AUTHOR, points: 1200, level: 'Gold', avatarSeed: 'Sarah', joinedAt: '2024-02-10', submissionCount: 22, lastActive: '1小时前' },
+  { id: '3', name: 'Ivan Sokolov', email: 'evaluator@devfront.com', role: UserRole.EVALUATOR, points: 850, level: 'Silver', avatarSeed: 'Ivan', joinedAt: '2024-03-05', submissionCount: 5, lastActive: '昨天' },
+  { id: '4', name: 'Maria Garcia', email: 'maria@devfront.com', role: UserRole.AUTHOR, points: 450, level: 'Bronze', avatarSeed: 'Maria', joinedAt: '2024-04-01', submissionCount: 12, lastActive: '4小时前' },
+  { id: '5', name: 'James Wilson', email: 'james@devfront.com', role: UserRole.AUTHOR, points: 3100, level: 'Grandmaster', avatarSeed: 'James', joinedAt: '2023-11-20', submissionCount: 88, lastActive: '现在' },
 ];
 
 export const componentService = {
@@ -61,5 +71,14 @@ export const componentService = {
       { date: 'Thu', count: 22 },
       { date: 'Fri', count: 30 },
     ];
+  },
+
+  async listUsers(): Promise<UserProfile[]> {
+    return new Promise(resolve => setTimeout(() => resolve(mockUsers), 400));
+  },
+
+  async updateUserRole(userId: string, newRole: UserRole): Promise<boolean> {
+    console.log(`Updating user ${userId} to role ${newRole}`);
+    return new Promise(resolve => setTimeout(() => resolve(true), 300));
   }
 };

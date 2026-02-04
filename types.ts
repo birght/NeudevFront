@@ -6,6 +6,21 @@ export enum UserRole {
   DEVELOPER = 'AUTHOR' // 兼容旧代码
 }
 
+export type ContributionLevel = 'Bronze' | 'Silver' | 'Gold' | 'Master' | 'Grandmaster';
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  points: number;
+  level: ContributionLevel;
+  avatarSeed: string;
+  joinedAt: string;
+  submissionCount: number;
+  lastActive: string;
+}
+
 export type ComponentSubmissionStatus = 'pending' | 'accepted' | 'rejected';
 
 export interface ComponentSubmission {

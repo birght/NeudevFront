@@ -8,7 +8,8 @@ import {
   ClipboardCheck, 
   Layers, 
   ShieldCheck, 
-  Star 
+  Star,
+  Users
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -20,11 +21,12 @@ const PERMISSION_MODULES = [
   { id: 'contribute', name: '创作新艺术品', icon: PlusCircle, path: '/admin/contribute' },
   { id: 'my-items', name: '个人贡献资产', icon: Layers, path: '/admin/my-items' },
   { id: 'moderate', name: '审核管理中央', icon: ClipboardCheck, path: '/admin/moderate' },
+  { id: 'users', name: '用户管理中心', icon: Users, path: '/admin/users' },
   { id: 'roles', name: '角色权限配置', icon: ShieldCheck, path: '/admin/roles' },
 ];
 
 const rolePermissions: Record<UserRole, string[]> = {
-  [UserRole.ADMIN]: ['overview', 'contribute', 'my-items', 'moderate', 'roles'],
+  [UserRole.ADMIN]: ['overview', 'contribute', 'my-items', 'moderate', 'users', 'roles'],
   [UserRole.AUTHOR]: ['overview', 'contribute', 'my-items'],
   [UserRole.EVALUATOR]: ['overview', 'moderate'],
 };

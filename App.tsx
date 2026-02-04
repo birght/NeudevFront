@@ -12,6 +12,7 @@ import AdminContribute from './pages/admin/Contribute';
 import AdminMyItems from './pages/admin/MyItems';
 import AdminModerate from './pages/admin/Moderate';
 import AdminRoles from './pages/admin/Roles';
+import AdminUsers from './pages/admin/Users';
 import Login from './pages/Login';
 import MotionArt from './pages/MotionArt';
 import UltimateLayouts from './pages/UltimateLayouts';
@@ -68,6 +69,7 @@ const App: React.FC = () => {
                  <Route path="contribute" element={<AdminContribute />} />
                  <Route path="my-items" element={<AdminMyItems />} />
                  <Route path="moderate" element={<AdminModerate />} />
+                 <Route path="users" element={<AdminUsers />} />
                  <Route path="roles" element={<AdminRoles />} />
               </Route>
 
