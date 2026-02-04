@@ -1,7 +1,9 @@
 
 export enum UserRole {
   ADMIN = 'ADMIN',
-  DEVELOPER = 'DEVELOPER'
+  AUTHOR = 'AUTHOR',
+  EVALUATOR = 'EVALUATOR',
+  DEVELOPER = 'AUTHOR' // 兼容旧代码
 }
 
 export type ComponentSubmissionStatus = 'pending' | 'accepted' | 'rejected';

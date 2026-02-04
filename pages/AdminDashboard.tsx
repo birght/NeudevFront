@@ -33,7 +33,14 @@ import {
   Star,
   Zap,
   Check,
-  HeartPulse, Radio, Factory, Wallet, CarFront, GraduationCap, Cpu, MonitorPlay, Landmark, Scale, Leaf, ShieldAlert, Stethoscope, Briefcase as HR
+  HeartPulse, Radio, Factory, Wallet, CarFront, GraduationCap, Cpu, MonitorPlay, Landmark, Scale, Leaf, ShieldAlert, Stethoscope, Briefcase as HR,
+  ShieldCheck,
+  ShieldEllipsis,
+  UserCog,
+  Settings2,
+  Lock,
+  Unlock,
+  Key
 } from 'lucide-react';
 import { componentService } from '../services/api';
 
@@ -49,21 +56,35 @@ const industries = [
   { id: 'manufacturing', name: '制造', icon: Cpu, color: 'text-slate-600', bg: 'bg-slate-100' }
 ];
 
-const categories = ['Layout', 'Navigation', 'Data Entry', 'Data Display', 'Feedback', 'Charts & Visualization', 'Media'];
 const scenarios = ['admin', 'dashboard', 'app', 'portal'];
 const tones = ['standard', 'modern', 'dark-tech'];
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ userRole }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'contribute' | 'my-items' | 'moderate'>(
-    userRole === UserRole.ADMIN ? 'overview' : 'contribute'
-  );
+// 权限菜单定义
+const PERMISSION_MODULES = [
+  { id: 'overview', name: '社区数据洞察', icon: LayoutDashboard, group: '数据大盘' },
+  { id: 'contribute', name: '创作新艺术品', icon: PlusCircle, group: '资产创作' },
+  { id: 'my-items', name: '个人贡献资产', icon: Layers, group: '资产创作' },
+  { id: 'moderate', name: '审核管理中央', icon: ClipboardCheck, group: '社区治理' },
+  { id: 'roles', name: '角色权限配置', icon: ShieldCheck, group: '系统治理' },
+];
 
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ userRole }) => {
+  const [activeTab, setActiveTab] = useState<string>('overview');
+  
+  // 角色权限模拟数据
+  const [rolePermissions, setRolePermissions] = useState<Record<UserRole, string[]>>({
+    [UserRole.ADMIN]: ['overview', 'contribute', 'my-items', 'moderate', 'roles'],
+    [UserRole.AUTHOR]: ['overview', 'contribute', 'my-items'],
+    [UserRole.EVALUATOR]: ['overview', 'moderate'],
+  });
+
+  const [selectedRoleForEdit, setSelectedRoleForEdit] = useState<UserRole>(UserRole.AUTHOR);
   const [items, setItems] = useState<ComponentSubmission[]>([]);
   const [overview, setOverview] = useState<ComponentSubmissionOverview | null>(null);
   const [trends, setTrends] = useState<ComponentSubmissionTrendPoint[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // 扩展后的投稿表单
+  // 投稿表单
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -75,7 +96,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userRole }) => {
     templateType: 'vue' as 'vue' | 'html',
   });
 
-  const [previewError, setPreviewError] = useState<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => { loadData(); }, [activeTab]);
@@ -113,6 +133,18 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userRole }) => {
     }
   }, [form.jsxCode, activeTab]);
 
+  const togglePermission = (role: UserRole, moduleId: string) => {
+    if (role === UserRole.ADMIN && moduleId === 'roles') return; // 防止 Admin 弄丢自己的权限
+    
+    setRolePermissions(prev => {
+      const current = prev[role];
+      const next = current.includes(moduleId) 
+        ? current.filter(id => id !== moduleId)
+        : [...current, moduleId];
+      return { ...prev, [role]: next };
+    });
+  };
+
   const handleSubmission = async () => {
     setLoading(true);
     try {
@@ -125,6 +157,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userRole }) => {
   };
 
   const selectedIndustryInfo = industries.find(i => i.id === form.industry) || industries[0];
+  
+  // 过滤当前用户可见的菜单项
+  const visibleModules = PERMISSION_MODULES.filter(m => rolePermissions[userRole].includes(m.id));
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -136,24 +171,18 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userRole }) => {
              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Creator Workspace</p>
           </div>
           
-          <button onClick={() => setActiveTab('overview')} className={`w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl text-sm font-bold transition-all ${activeTab === 'overview' ? 'bg-theme text-white shadow-xl shadow-theme/20' : 'text-slate-600 hover:bg-slate-50'}`}>
-            <LayoutDashboard size={18} /> 社区数据洞察
-          </button>
-          
-          <button onClick={() => setActiveTab('contribute')} className={`w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl text-sm font-bold transition-all ${activeTab === 'contribute' ? 'bg-theme text-white shadow-xl shadow-theme/20' : 'text-slate-600 hover:bg-slate-50'}`}>
-            <PlusCircle size={18} /> 创作新艺术品
-          </button>
-          
-          <button onClick={() => setActiveTab('my-items')} className={`w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl text-sm font-bold transition-all ${activeTab === 'my-items' ? 'bg-theme text-white shadow-xl shadow-theme/20' : 'text-slate-600 hover:bg-slate-50'}`}>
-            <Layers size={18} /> 个人贡献资产
-          </button>
-          
-          {userRole === UserRole.ADMIN && (
-            <button onClick={() => setActiveTab('moderate')} className={`w-full flex items-center justify-between px-5 py-3.5 rounded-2xl text-sm font-bold transition-all ${activeTab === 'moderate' ? 'bg-theme text-white shadow-xl shadow-theme/20' : 'text-slate-600 hover:bg-slate-50'}`}>
-              <div className="flex items-center gap-3"><ClipboardCheck size={18} /> 审核中央</div>
-              <span className="bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-full">12</span>
+          {visibleModules.map(module => (
+            <button 
+              key={module.id}
+              onClick={() => setActiveTab(module.id)} 
+              className={`w-full flex items-center justify-between px-5 py-3.5 rounded-2xl text-sm font-bold transition-all ${activeTab === module.id ? 'bg-theme text-white shadow-xl shadow-theme/20' : 'text-slate-600 hover:bg-slate-50'}`}
+            >
+              <div className="flex items-center gap-3">
+                <module.icon size={18} /> {module.name}
+              </div>
+              {module.id === 'moderate' && <span className="bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-full">12</span>}
             </button>
-          )}
+          ))}
 
           <div className="mt-12 p-6 bg-slate-900 rounded-3xl text-white relative overflow-hidden">
              <div className="absolute -top-4 -right-4 w-24 h-24 bg-theme/30 blur-2xl rounded-full"></div>
@@ -165,9 +194,122 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userRole }) => {
           </div>
         </aside>
 
-        {/* Content */}
+        {/* Content Area */}
         <main className="flex-grow bg-white border border-slate-100 rounded-[3rem] shadow-2xl shadow-slate-200/50 overflow-hidden min-h-[800px]">
           
+          {/* TAB: Role Management (NEW) */}
+          {activeTab === 'roles' && (
+            <div className="p-12 animate-in fade-in slide-in-from-right-8 duration-700">
+               <div className="flex justify-between items-start mb-12">
+                 <div>
+                   <h2 className="text-4xl font-black text-slate-900 tracking-tighter">角色权限中央</h2>
+                   <p className="text-slate-500 font-medium mt-1">配置不同角色的功能边界，维护社区生态平衡。</p>
+                 </div>
+                 <div className="flex gap-2">
+                    <button className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-2xl text-xs font-black hover:bg-black transition-all">
+                       <PlusCircle size={14} /> 新增自定义角色
+                    </button>
+                 </div>
+               </div>
+
+               <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                  {/* Role Selector List */}
+                  <div className="lg:col-span-4 space-y-4">
+                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4">选择角色</label>
+                     {[
+                       { id: UserRole.ADMIN, name: '超级管理员', desc: '拥有系统最高控制权', icon: ShieldCheck, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+                       { id: UserRole.AUTHOR, name: '核心创作者', desc: '负责资产创作与维护', icon: UserCog, color: 'text-theme', bg: 'bg-theme/5' },
+                       { id: UserRole.EVALUATOR, name: '社区评委', desc: '负责资产审核与合规', icon: ShieldEllipsis, color: 'text-violet-600', bg: 'bg-violet-50' }
+                     ].map(role => (
+                       <button
+                         key={role.id}
+                         onClick={() => setSelectedRoleForEdit(role.id)}
+                         className={`w-full p-6 rounded-[2rem] border transition-all text-left flex items-start gap-4 ${
+                           selectedRoleForEdit === role.id 
+                           ? `border-slate-900 bg-white shadow-2xl shadow-slate-200 scale-[1.02] ring-1 ring-slate-900` 
+                           : 'border-slate-100 bg-slate-50/50 hover:bg-white hover:border-slate-200'
+                         }`}
+                       >
+                         <div className={`p-3 rounded-2xl ${role.bg} ${role.color}`}>
+                           <role.icon size={24} />
+                         </div>
+                         <div>
+                            <h4 className="font-black text-slate-900 tracking-tight">{role.name}</h4>
+                            <p className="text-[11px] text-slate-400 font-bold mt-1 uppercase tracking-tighter">{role.desc}</p>
+                         </div>
+                       </button>
+                     ))}
+                  </div>
+
+                  {/* Permission Matrix Area */}
+                  <div className="lg:col-span-8">
+                     <div className="bg-slate-50/50 rounded-[2.5rem] border border-slate-100 p-8">
+                        <div className="flex items-center justify-between mb-8 pb-6 border-b border-slate-200/60">
+                           <div className="flex items-center gap-3">
+                              <div className="p-2 bg-slate-900 text-white rounded-xl"><Settings2 size={18} /></div>
+                              <span className="text-sm font-black text-slate-900 tracking-tight">功能权限矩阵 - {selectedRoleForEdit}</span>
+                           </div>
+                           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Auto-save Enabled</span>
+                        </div>
+
+                        <div className="space-y-10">
+                           {['数据大盘', '资产创作', '社区治理', '系统治理'].map(group => (
+                             <div key={group}>
+                               <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                                  <div className="w-1.5 h-1.5 bg-slate-300 rounded-full"></div> {group}
+                               </h5>
+                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  {PERMISSION_MODULES.filter(m => m.group === group).map(module => {
+                                    const isEnabled = rolePermissions[selectedRoleForEdit].includes(module.id);
+                                    const isAdminLock = selectedRoleForEdit === UserRole.ADMIN && module.id === 'roles';
+                                    
+                                    return (
+                                      <div 
+                                        key={module.id} 
+                                        className={`p-5 rounded-3xl border transition-all flex items-center justify-between ${
+                                          isEnabled ? 'bg-white border-slate-200 shadow-sm' : 'bg-transparent border-slate-100 opacity-60'
+                                        }`}
+                                      >
+                                        <div className="flex items-center gap-4">
+                                          <div className={`p-2.5 rounded-2xl ${isEnabled ? 'bg-theme text-white' : 'bg-slate-100 text-slate-400'}`}>
+                                            <module.icon size={18} />
+                                          </div>
+                                          <div className="text-sm font-bold text-slate-800">{module.name}</div>
+                                        </div>
+                                        <button 
+                                          onClick={() => togglePermission(selectedRoleForEdit, module.id)}
+                                          disabled={isAdminLock}
+                                          className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all ${
+                                            isEnabled ? 'bg-theme shadow-lg shadow-theme/20' : 'bg-slate-200'
+                                          } ${isAdminLock ? 'cursor-not-allowed' : ''}`}
+                                        >
+                                          {isAdminLock ? (
+                                            <Lock size={12} className="mx-auto text-white/50" />
+                                          ) : (
+                                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isEnabled ? 'translate-x-6' : 'translate-x-2'}`} />
+                                          )}
+                                        </button>
+                                      </div>
+                                    );
+                                  })}
+                               </div>
+                             </div>
+                           ))}
+                        </div>
+
+                        <div className="mt-12 p-6 bg-theme/5 rounded-3xl border border-theme/10 flex gap-4">
+                           <div className="p-3 bg-white rounded-2xl text-theme shadow-sm h-fit"><Key size={20} /></div>
+                           <div>
+                              <h5 className="text-sm font-black text-slate-900 tracking-tight">权限变更日志</h5>
+                              <p className="text-xs text-slate-500 font-medium mt-1">最近一次修改：Admin 于 2分钟前 将 角色权限配置 锁定为管理员专有功能。</p>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+          )}
+
           {/* TAB: Overview */}
           {activeTab === 'overview' && (
             <div className="p-12 animate-in fade-in duration-500">
@@ -212,10 +354,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userRole }) => {
             </div>
           )}
 
-          {/* TAB: Contribute (Refactored) */}
+          {/* TAB: Contribute */}
           {activeTab === 'contribute' && (
             <div className="h-full flex flex-col lg:flex-row animate-in slide-in-from-bottom-8 duration-700">
-               {/* Form Section */}
                <div className="w-full lg:w-[480px] border-r border-slate-50 flex flex-col h-full overflow-y-auto custom-scroll p-10">
                   <div className="mb-10">
                     <h2 className="text-3xl font-black text-slate-900 tracking-tight">发布新作品</h2>
@@ -265,7 +406,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userRole }) => {
                   </div>
                </div>
 
-               {/* Preview Section */}
                <div className="flex-grow p-12 bg-slate-50/50 relative overflow-hidden flex flex-col">
                   <div className={`absolute inset-0 opacity-10 transition-colors duration-1000 ${selectedIndustryInfo.bg} ${selectedIndustryInfo.color}`}>
                      <selectedIndustryInfo.icon size={400} className="absolute -right-20 -bottom-20 opacity-20 rotate-12" />
@@ -279,22 +419,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userRole }) => {
                           <h4 className="text-sm font-black text-slate-900">艺术品预览</h4>
                         </div>
                      </div>
-                     <div className="flex gap-2">
-                        <div className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-[10px] font-black text-slate-400">Vue 3.5</div>
-                        <div className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-[10px] font-black text-slate-400">Tailwind 3.4</div>
-                     </div>
                   </div>
 
                   <div className="flex-grow bg-white/40 backdrop-blur-xl rounded-[3rem] border border-white shadow-2xl overflow-hidden relative z-10 flex items-center justify-center">
                      <iframe ref={iframeRef} className="w-full h-full border-none" title="lab-preview" />
-                  </div>
-
-                  <div className="mt-8 p-8 bg-white/80 backdrop-blur rounded-[2rem] border border-white relative z-10 flex gap-6">
-                     <div className="p-4 bg-theme/10 rounded-2xl text-theme h-fit"><Sparkles size={24}/></div>
-                     <div>
-                        <h5 className="font-black text-slate-900">质量检测建议</h5>
-                        <p className="text-sm text-slate-500 font-medium leading-relaxed mt-1">您选择的 <b>{selectedIndustryInfo.name}</b> 行业组件通常需要考虑高频率的数据交互，建议为关键按钮添加磁吸动效 (Magnetic Effect)。</p>
-                     </div>
                   </div>
                </div>
             </div>
@@ -338,6 +466,18 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userRole }) => {
                </div>
             </div>
           )}
+          
+          {/* Missing Module Placeholder */}
+          {!['roles', 'overview', 'contribute', 'my-items'].includes(activeTab) && (
+            <div className="p-20 flex flex-col items-center justify-center text-center">
+               <div className="w-24 h-24 bg-slate-50 rounded-[2rem] flex items-center justify-center text-slate-300 mb-8">
+                  <Terminal size={48} />
+               </div>
+               <h3 className="text-2xl font-black text-slate-900">功能模块正在构建</h3>
+               <p className="text-slate-500 font-medium mt-2">该模块（{activeTab}）正在紧锣密鼓地开发中，敬请期待。</p>
+            </div>
+          )}
+
         </main>
       </div>
     </div>
