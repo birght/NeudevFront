@@ -5,61 +5,61 @@ import {
   ComponentSubmissionTrendPoint 
 } from '../types';
 
-// 模拟 API 响应，实际项目中请替换为真实的 axios/fetch 调用
+// 模拟 API 响应
 const mockSubmissions: ComponentSubmission[] = [
   {
     id: 101,
-    title: '玻璃质感卡片',
-    description: '采用最新玻璃拟态设计的卡片组件',
-    jsxCode: '<template><div class="p-6 bg-white/30 backdrop-blur-xl border border-white/20 rounded-3xl">Glass Card</div></template>',
+    title: '智慧医疗 - 患者生命体征看板',
+    description: '采用高对比度布局设计，适配 4K 医疗监护屏。',
+    jsxCode: '<template><div class="p-6 bg-slate-950 text-blue-400 rounded-3xl border border-blue-500/20">Live Vital Signs</div></template>',
     status: 'accepted',
     templateType: 'vue',
-    score: 95,
+    score: 98,
+    industry: 'medical',
+    category: 'Charts & Visualization',
+    scenario: 'dashboard',
+    tone: 'dark-tech',
+    downloads: 1240,
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    category: 'Layout'
+    updatedAt: new Date().toISOString()
   }
 ];
 
 export const componentService = {
   async listMySubmissions(): Promise<ComponentSubmission[]> {
-    // return http.get("/component-submissions/mine");
-    return mockSubmissions;
+    return new Promise(resolve => setTimeout(() => resolve(mockSubmissions), 500));
   },
 
-  async createSubmission(payload: any): Promise<ComponentSubmission> {
-    // return http.post("/component-submissions", payload);
-    console.log('Creating submission:', payload);
-    return { ...payload, id: Math.random(), status: 'pending', createdAt: new Date().toISOString() };
+  async createSubmission(payload: Partial<ComponentSubmission>): Promise<ComponentSubmission> {
+    console.log('Sending to Backend:', payload);
+    return { 
+      ...payload, 
+      id: Math.floor(Math.random() * 1000), 
+      status: 'pending', 
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    } as ComponentSubmission;
   },
 
   async getOverview(): Promise<ComponentSubmissionOverview> {
     return {
-      total: 128,
-      accepted: 110,
-      rejected: 8,
+      total: 156,
+      accepted: 142,
+      rejected: 4,
       pending: 10,
-      approvalRate: 92.5,
-      lastMonthTotal: 105,
-      momPercent: 12.5
+      approvalRate: 91,
+      lastMonthTotal: 120,
+      momPercent: 30
     };
   },
 
   async getTrends(days: number): Promise<ComponentSubmissionTrendPoint[]> {
     return [
-      { date: 'Mon', count: 4 },
-      { date: 'Tue', count: 7 },
-      { date: 'Wed', count: 5 },
-      { date: 'Thu', count: 12 },
-      { date: 'Fri', count: 8 },
+      { date: 'Mon', count: 12 },
+      { date: 'Tue', count: 19 },
+      { date: 'Wed', count: 15 },
+      { date: 'Thu', count: 22 },
+      { date: 'Fri', count: 30 },
     ];
-  },
-
-  async moderate(id: number, payload: any) {
-    // return http.post(`/component-submissions/${id}/moderate`, payload);
-  },
-
-  async appeal(id: number, appealText: string) {
-    // return http.post(`/component-submissions/${id}/appeal`, { appealText });
   }
 };

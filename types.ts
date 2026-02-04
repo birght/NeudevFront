@@ -18,13 +18,18 @@ export interface ComponentSubmission {
   rejectReason?: string | null;
   appealText?: string | null;
   appealReply?: string | null;
-  category?: string | null;
+  
+  // 新增元数据维度
+  industry: string;      // 业务行业
+  category: string;      // 功能分类
+  scenario: string;      // 应用场景
+  tone: string;          // 视觉调性
+  
   tags?: string[] | null;
-  metaTags?: string[] | null;
-  frameworks?: string[] | null;
   createdAt: string;
   updatedAt: string;
   authorName?: string;
+  downloads?: number;
 }
 
 export interface ComponentSubmissionTrendPoint {
