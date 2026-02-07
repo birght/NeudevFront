@@ -36,16 +36,22 @@ export interface ComponentSubmission {
   appealText?: string | null;
   appealReply?: string | null;
   
-  // 新增元数据维度
-  industry: string;      // 业务行业
-  category: string;      // 功能分类
-  scenario: string;      // 应用场景
-  tone: string;          // 视觉调性
+  // 元数据维度
+  industry: string;      
+  category: string;      
+  scenario: string;      
+  tone: string;          
+  
+  // 经济系统字段
+  copyCount: number;        // 被复制代码次数
+  pointsPerCopy: number;    // 单次复制所需积分
+  totalPointsEarned: number; // 组件总收益积分
   
   tags?: string[] | null;
   createdAt: string;
   updatedAt: string;
   authorName?: string;
+  authorAvatar?: string;
   downloads?: number;
 }
 
