@@ -3,7 +3,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { componentService } from '../services/api';
 import { ComponentSubmission } from '../types';
-// Add ChevronRight to the imports
 import { 
   ArrowLeft, Copy, Check, Lock, Unlock, 
   Coins, TrendingUp, Download, Eye, 
@@ -26,6 +25,12 @@ const ComponentDetail: React.FC = () => {
 
   useEffect(() => {
     if (id) {
+      // 检查本地存储中是否存在解锁记录
+      const unlockedIds = JSON.parse(localStorage.getItem('devfront_unlocked_ids') || '[]');
+      if (unlockedIds.includes(Number(id))) {
+        setIsUnlocked(true);
+      }
+
       componentService.getComponentById(Number(id)).then(data => {
         setComponent(data);
         setLoading(false);
@@ -101,6 +106,12 @@ const ComponentDetail: React.FC = () => {
       setIsUnlocking(false);
       setShowSuccessToast(true);
       
+      // 持久化解锁记录
+      const unlockedIds = JSON.parse(localStorage.getItem('devfront_unlocked_ids') || '[]');
+      if (!unlockedIds.includes(component.id)) {
+        localStorage.setItem('devfront_unlocked_ids', JSON.stringify([...unlockedIds, component.id]));
+      }
+
       // 更新组件统计表现
       setComponent(prev => prev ? {
         ...prev, 
