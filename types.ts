@@ -72,6 +72,7 @@ export interface ComponentSubmission {
   totalPointsEarned: number; 
   
   tags?: string[] | null;
+  dependencies?: string[]; // 新增：远程依赖列表，如 ["three", "gsap"]
   createdAt: string;
   updatedAt: string;
   authorName?: string;

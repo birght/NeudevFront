@@ -8,7 +8,8 @@ import {
   Coins, TrendingUp, Download, Eye, 
   Sparkles, Code2, HeartPulse, ShieldCheck, 
   X, ExternalLink, Box, Terminal, Zap, Trophy,
-  AlertCircle, Loader2, BadgeCheck, ChevronRight
+  AlertCircle, Loader2, BadgeCheck, ChevronRight, Package,
+  Star, Quote, Fingerprint, ShieldAlert, Award, MousePointer2
 } from 'lucide-react';
 
 const ComponentDetail: React.FC = () => {
@@ -19,13 +20,12 @@ const ComponentDetail: React.FC = () => {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [isUnlocking, setIsUnlocking] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [userPoints, setUserPoints] = useState(2500); // 模拟用户积分
+  const [userPoints, setUserPoints] = useState(2500); 
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
     if (id) {
-      // 检查本地存储中是否存在解锁记录
       const unlockedIds = JSON.parse(localStorage.getItem('devfront_unlocked_ids') || '[]');
       if (unlockedIds.includes(Number(id))) {
         setIsUnlocked(true);
@@ -76,6 +76,11 @@ const ComponentDetail: React.FC = () => {
                 style.textContent = textContent;
                 document.head.appendChild(style);
               },
+              async handleModule(type, name) {
+                if (type === 'module') {
+                  return import(\`https://esm.sh/\${name}?external=vue\`);
+                }
+              }
             };
             const app = Vue.createApp({
               components: { 'my-component': Vue.defineAsyncComponent(() => loadModule('/component.vue', options)) },
@@ -96,30 +101,21 @@ const ComponentDetail: React.FC = () => {
   const handleUnlock = () => {
     if (!component) return;
     if (userPoints < component.pointsPerCopy) return;
-
     setIsUnlocking(true);
-
-    // 模拟真实的积分抵扣与授权签名过程
     setTimeout(() => {
       setUserPoints(prev => prev - component.pointsPerCopy);
       setIsUnlocked(true);
       setIsUnlocking(false);
       setShowSuccessToast(true);
-      
-      // 持久化解锁记录
       const unlockedIds = JSON.parse(localStorage.getItem('devfront_unlocked_ids') || '[]');
       if (!unlockedIds.includes(component.id)) {
         localStorage.setItem('devfront_unlocked_ids', JSON.stringify([...unlockedIds, component.id]));
       }
-
-      // 更新组件统计表现
       setComponent(prev => prev ? {
         ...prev, 
         copyCount: prev.copyCount + 1,
         totalPointsEarned: prev.totalPointsEarned + prev.pointsPerCopy
       } : null);
-
-      // 3秒后自动隐藏成功提示
       setTimeout(() => setShowSuccessToast(false), 3000);
     }, 1500);
   };
@@ -135,64 +131,45 @@ const ComponentDetail: React.FC = () => {
     <div className="h-screen flex items-center justify-center bg-slate-50">
        <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-10 h-10 text-theme animate-spin" />
-          <span className="text-xs font-black text-slate-400 uppercase tracking-widest">正在载入数字资产...</span>
+          <span className="text-xs font-black text-slate-400 uppercase tracking-widest">正在解析数字资产...</span>
        </div>
     </div>
   );
 
-  if (!component) return <div className="p-20 text-center font-bold text-slate-400">资产已失效或未找到。</div>;
-
-  const isLowBalance = userPoints < component.pointsPerCopy;
+  if (!component) return <div className="p-20 text-center font-bold text-slate-400">资产已失效。</div>;
 
   return (
     <div className="bg-white min-h-screen selection:bg-theme/10 selection:text-theme">
-      
-      {/* 成功提示 Toast */}
       {showSuccessToast && (
         <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[100] animate-in fade-in slide-in-from-top-4 duration-500">
            <div className="px-6 py-4 bg-emerald-600 text-white rounded-2xl shadow-2xl flex items-center gap-3">
               <BadgeCheck className="text-emerald-200" size={20} />
-              <div className="flex flex-col">
-                 <span className="text-sm font-black tracking-tight">资产解锁成功</span>
-                 <span className="text-[10px] font-bold opacity-80 uppercase tracking-tighter">已划扣 {component.pointsPerCopy} 积分，获得永久代码授权。</span>
-              </div>
+              <span className="text-sm font-black tracking-tight">资产解锁成功，获得永久代码授权</span>
            </div>
         </div>
       )}
 
-      {/* 顶部导航 */}
       <div className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
-        <button 
-          onClick={() => navigate('/components')}
-          className="p-3 bg-slate-50 text-slate-400 rounded-2xl hover:bg-theme hover:text-white transition-all shadow-sm flex items-center gap-2 group"
-        >
+        <button onClick={() => navigate('/components')} className="p-3 bg-slate-50 text-slate-400 rounded-2xl hover:bg-theme hover:text-white transition-all shadow-sm flex items-center gap-2 group">
           <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
           <span className="text-xs font-black uppercase tracking-widest">返回资产大厅</span>
         </button>
-        
         <div className="flex items-center gap-4">
            {isUnlocked && (
-             <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 animate-in zoom-in">
+             <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100">
                 <ShieldCheck size={16} />
-                <span className="text-[10px] font-black uppercase tracking-widest">已获得永久授权</span>
+                <span className="text-[10px] font-black uppercase tracking-widest">已授权</span>
              </div>
            )}
-           <div className="flex items-center gap-3 px-5 py-2.5 bg-amber-50 rounded-2xl border border-amber-100 shadow-sm transition-all hover:scale-105">
-              <Coins size={18} className="text-amber-500 animate-bounce" />
-              <div className="flex flex-col leading-none">
-                 <span className="text-[9px] text-amber-600 font-black uppercase tracking-tighter mb-0.5">我的积分余额</span>
-                 <span className="text-sm font-black text-amber-900 tabular-nums">{userPoints.toLocaleString()}</span>
-              </div>
+           <div className="flex items-center gap-3 px-5 py-2.5 bg-amber-50 rounded-2xl border border-amber-100">
+              <Coins size={18} className="text-amber-500" />
+              <span className="text-sm font-black text-amber-900 tabular-nums">{userPoints.toLocaleString()}</span>
            </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 pb-20 mt-4">
-        
-        {/* 左侧：内容主区 */}
         <div className="lg:col-span-8 space-y-10 animate-in fade-in duration-700">
-           
-           {/* 1. 标题与头部 */}
            <div>
               <div className="flex flex-wrap gap-2 mb-4">
                 <span className="px-3 py-1 bg-theme/5 text-theme text-[10px] font-black rounded-lg border border-theme/10 uppercase tracking-widest">{component.industry}</span>
@@ -202,26 +179,37 @@ const ComponentDetail: React.FC = () => {
               <p className="text-slate-500 font-medium leading-relaxed max-w-2xl">{component.description}</p>
            </div>
 
-           {/* 2. 预览区域 */}
+           {/* 渲染沙盒 */}
            <div className="space-y-4">
               <div className="flex items-center justify-between px-2">
                  <div className="flex items-center gap-2.5">
-                   <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-                   <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Live Prototype Sandbox</span>
-                 </div>
-                 <div className="flex items-center gap-2">
-                    <button onClick={updatePreview} className="text-[10px] font-black text-slate-400 hover:text-theme flex items-center gap-1.5 transition-colors uppercase tracking-widest">
-                       <TrendingUp size={12} /> 刷新实时渲染
-                    </button>
+                   <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                   <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Live Prototype</span>
                  </div>
               </div>
-              <div className="aspect-video bg-white rounded-[3rem] border border-slate-100 overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)] relative group">
-                 <div className="absolute inset-0 opacity-[0.02] bg-[radial-gradient(#000_1.5px,transparent_1.5px)] [background-size:32px_32px]"></div>
+              <div className="aspect-video bg-white rounded-[3rem] border border-slate-100 overflow-hidden shadow-2xl relative group">
                  <iframe ref={iframeRef} className="w-full h-full border-none relative z-10" title="sandbox" />
               </div>
            </div>
 
-           {/* 3. 代码区 (核心解锁逻辑) */}
+           {/* 依赖清单展示 */}
+           {component.dependencies && component.dependencies.length > 0 && (
+              <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
+                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <Package size={14} /> 运行环境依赖 (NPM Packages)
+                 </h4>
+                 <div className="flex flex-wrap gap-3">
+                    {component.dependencies.map(dep => (
+                      <div key={dep} className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-600 flex items-center gap-2 shadow-sm">
+                         <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+                         {dep}
+                      </div>
+                    ))}
+                 </div>
+              </div>
+           )}
+
+           {/* 代码解锁区域 */}
            <div className="space-y-5">
               <div className="flex items-center justify-between px-2">
                  <div className="flex items-center gap-2.5 text-slate-900">
@@ -229,12 +217,9 @@ const ComponentDetail: React.FC = () => {
                     <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Source Implementation</span>
                  </div>
                  {isUnlocked && (
-                    <button 
-                      onClick={handleCopy}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white text-[11px] font-black rounded-xl shadow-xl hover:bg-black transition-all active:scale-95 group"
-                    >
-                      {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} className="group-hover:rotate-12" />}
-                      {copied ? '已成功复制源码' : '复制核心组件代码'}
+                    <button onClick={handleCopy} className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white text-[11px] font-black rounded-xl shadow-xl active:scale-95 transition-all">
+                      {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+                      {copied ? '已复制' : '复制代码'}
                     </button>
                  )}
               </div>
@@ -242,166 +227,170 @@ const ComponentDetail: React.FC = () => {
               <div className="relative group overflow-hidden rounded-[2.5rem]">
                  {!isUnlocked && (
                     <div className="absolute inset-0 z-20 bg-slate-900/60 backdrop-blur-3xl flex flex-col items-center justify-center text-white p-12 text-center animate-in zoom-in duration-500">
-                       <div className="w-20 h-20 bg-white/10 rounded-3xl flex items-center justify-center text-theme mb-8 border border-white/20 shadow-inner group-hover:scale-110 transition-transform duration-500">
+                       <div className="w-20 h-20 bg-white/10 rounded-3xl flex items-center justify-center text-theme mb-8 border border-white/20">
                           {isUnlocking ? <Loader2 size={36} className="animate-spin" /> : <Lock size={36} />}
                        </div>
-                       <h3 className="text-3xl font-black mb-4 tracking-tight">受版权保护的内容</h3>
-                       <p className="text-slate-300 text-sm font-medium max-w-sm mb-10 leading-relaxed opacity-90">
-                         该组件属于高级数字资产。解锁后，您将获得完整的源代码使用权及未来版本更新。
-                       </p>
-                       
-                       <div className="flex flex-col gap-4 w-full max-w-xs">
-                          <button 
-                            disabled={isUnlocking || isLowBalance}
-                            onClick={handleUnlock}
-                            className={`w-full py-5 rounded-2xl font-black transition-all flex items-center justify-center gap-3 shadow-2xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
-                              isLowBalance ? 'bg-slate-700/50 text-white/50 border border-white/5' : 'bg-theme text-white hover:bg-theme-dark shadow-theme/30'
-                            }`}
-                          >
-                             {isUnlocking ? (
-                               <>
-                                 <Loader2 size={20} className="animate-spin" />
-                                 正在划扣积分...
-                               </>
-                             ) : (
-                               <>
-                                 <Unlock size={20} /> 立即消耗 {component.pointsPerCopy} pts 解锁
-                               </>
-                             )}
-                          </button>
-                          
-                          {isLowBalance && (
-                            <div className="flex items-center justify-center gap-2 text-rose-300 animate-pulse">
-                               <AlertCircle size={14} />
-                               <span className="text-[10px] font-black uppercase">积分不足：还差 {component.pointsPerCopy - userPoints} pts</span>
-                            </div>
-                          )}
-                       </div>
+                       <h3 className="text-3xl font-black mb-4 tracking-tight">代码资产已锁定</h3>
+                       <p className="text-slate-300 text-sm font-medium max-w-sm mb-10 opacity-90">解锁后即可获取完整源码、远程依赖配置及该作者的持续维护支持。</p>
+                       <button 
+                         disabled={isUnlocking || userPoints < component.pointsPerCopy}
+                         onClick={handleUnlock}
+                         className="px-10 py-5 bg-theme text-white rounded-2xl font-black shadow-2xl shadow-theme/30 active:scale-95 disabled:opacity-50"
+                       >
+                          {isUnlocking ? '正在扣除积分...' : `消耗 ${component.pointsPerCopy} pts 永久解锁`}
+                       </button>
                     </div>
                  )}
-                 <div className={`bg-[#0b0e14] p-12 overflow-hidden border border-slate-800 shadow-inner transition-all duration-1000 ease-in-out ${!isUnlocked ? 'grayscale blur-[3px] scale-[1.02]' : 'scale-100'}`}>
-                    <div className="flex items-center gap-2 mb-8 opacity-20 select-none">
-                       <div className="w-2.5 h-2.5 rounded-full bg-rose-500"></div>
-                       <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
-                       <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-                    </div>
-                    <pre className="text-emerald-400 font-mono text-sm leading-[1.8] overflow-x-auto custom-scroll max-h-[600px] scroll-smooth">
+                 <div className={`bg-[#0b0e14] p-12 overflow-hidden border border-slate-800 transition-all duration-1000 ${!isUnlocked ? 'grayscale blur-[4px]' : 'scale-100'}`}>
+                    <pre className="text-emerald-400 font-mono text-sm leading-[1.8] overflow-x-auto custom-scroll max-h-[600px]">
                        {component.jsxCode}
                     </pre>
                  </div>
               </div>
            </div>
+
+           {/* --- 参考 CSSDA 的专家评审信息区域 --- */}
+           {component.status === 'accepted' && (
+              <div className="animate-in fade-in slide-in-from-bottom-10 duration-1000 pt-16">
+                 <div className="flex items-center gap-4 mb-10">
+                    <div className="h-px bg-slate-100 flex-1"></div>
+                    <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em]">Expert Audit Verdict</h3>
+                    <div className="h-px bg-slate-100 flex-1"></div>
+                 </div>
+
+                 <div className="grid grid-cols-1 xl:grid-cols-12 gap-10">
+                    {/* 1. Score Breakdown (Left) */}
+                    <div className="xl:col-span-5 bg-slate-900 text-white rounded-[3rem] p-10 relative overflow-hidden group">
+                       <div className="absolute top-0 right-0 p-8 opacity-5 -rotate-12 group-hover:scale-110 transition-transform duration-1000">
+                          <Award size={180} />
+                       </div>
+                       
+                       <div className="relative z-10 flex flex-col items-center text-center">
+                          <span className="text-[10px] font-black text-theme uppercase tracking-widest mb-2">Overall Score</span>
+                          <div className="text-8xl font-black tracking-tighter mb-8 tabular-nums">
+                             {component.score?.toFixed(1) || 'N/A'}
+                          </div>
+                          
+                          <div className="w-full space-y-5">
+                             {[
+                                { label: 'UI DESIGN', val: component.scoreBreakdown?.design || 8.5 },
+                                { label: 'UX LOGIC', val: component.scoreBreakdown?.usability || 8.0 },
+                                { label: 'CODE QUALITY', val: component.scoreBreakdown?.code || 9.0 },
+                                { label: 'INNOVATION', val: component.scoreBreakdown?.innovation || 7.5 }
+                             ].map((score, idx) => (
+                                <div key={idx} className="space-y-2">
+                                   <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                                      <span className="text-slate-500">{score.label}</span>
+                                      <span className="text-theme">{score.val.toFixed(1)}</span>
+                                   </div>
+                                   <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                                      <div 
+                                        className="h-full bg-theme transition-all duration-1000 delay-300" 
+                                        style={{ width: `${score.val * 10}%` }}
+                                      ></div>
+                                   </div>
+                                </div>
+                             ))}
+                          </div>
+
+                          <div className="mt-10 pt-8 border-t border-white/5 w-full">
+                             <div className="inline-flex items-center gap-2 px-4 py-2 bg-theme/20 text-theme border border-theme/20 rounded-full text-[10px] font-black uppercase tracking-widest animate-pulse">
+                                <BadgeCheck size={14} /> S-Tier Verified Asset
+                             </div>
+                          </div>
+                       </div>
+                    </div>
+
+                    {/* 2. Reviewer Endorsement (Right) */}
+                    <div className="xl:col-span-7 flex flex-col gap-8">
+                       <div className="p-10 bg-slate-50 border border-slate-100 rounded-[3rem] relative overflow-hidden flex-1">
+                          <Quote className="absolute top-8 right-8 text-slate-200" size={48} />
+                          
+                          <div className="flex items-center gap-4 mb-8">
+                             <img 
+                               src="https://api.dicebear.com/7.x/avataaars/svg?seed=Federica" 
+                               className="w-16 h-16 rounded-2xl bg-white border border-slate-200 shadow-sm"
+                               alt="judge-avatar"
+                             />
+                             <div>
+                                <h4 className="text-xl font-black text-slate-900 tracking-tight">Federica Gandolfo</h4>
+                                <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                   <ShieldCheck size={12} className="text-theme" /> Senior Code Auditor
+                                </div>
+                             </div>
+                          </div>
+
+                          <p className="text-xl font-medium text-slate-600 leading-relaxed italic mb-8 relative z-10">
+                             "该组件在视觉表达与工程健壮性之间取得了极佳的平衡。特别是在三维坐标映射的算法处理上，展现了超越常规外包组件的细腻感，是极具参考价值的优质资产。"
+                          </p>
+
+                          <div className="grid grid-cols-2 gap-4">
+                             <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                                <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg"><Zap size={14} /></div>
+                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Zero Latency</span>
+                             </div>
+                             <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg"><MousePointer2 size={14} /></div>
+                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">A11y Compliant</span>
+                             </div>
+                          </div>
+                       </div>
+
+                       <div className="p-8 border border-theme/20 bg-theme/5 rounded-[2.5rem] flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                             <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-theme shadow-sm">
+                                <Fingerprint size={24} />
+                             </div>
+                             <div>
+                                <h5 className="text-sm font-black text-slate-900">资产质量证明 (QoC)</h5>
+                                <p className="text-[10px] text-slate-400 font-medium">已通过 14 项生产环境合规性检查。</p>
+                             </div>
+                          </div>
+                          <button className="px-6 py-3 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-theme transition-all">查看完整报告</button>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+           )}
         </div>
 
-        {/* 右侧：统计与作者面板 */}
-        <div className="lg:col-span-4 space-y-8 h-fit lg:sticky lg:top-24">
-           
-           {/* 经济数据卡片 */}
+        {/* 右侧边栏 */}
+        <div className="lg:col-span-4 space-y-8">
            <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl group">
-              <div className="absolute top-0 right-0 p-10 opacity-5 -rotate-12 transition-transform group-hover:scale-125 duration-1000">
-                 <Trophy size={140} />
-              </div>
               <div className="relative z-10">
                  <div className="flex items-center gap-2 text-theme text-[10px] font-black uppercase tracking-[0.2em] mb-8">
-                    <TrendingUp size={14} /> Ecosystem Performance
+                    <TrendingUp size={14} /> Asset Performance
                  </div>
-                 
                  <div className="grid grid-cols-2 gap-4 mb-10">
-                    <div className="p-5 bg-white/5 rounded-[1.5rem] border border-white/10 hover:bg-white/10 transition-colors">
-                       <div className="text-[9px] text-slate-400 font-black uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
-                          <Download size={10} /> 已引用
-                       </div>
-                       <div className="text-3xl font-black text-white tabular-nums">
-                          {component.copyCount} <span className="text-[9px] opacity-40 uppercase">次</span>
-                       </div>
+                    <div className="p-5 bg-white/5 rounded-[1.5rem] border border-white/10">
+                       <div className="text-[9px] text-slate-400 font-black uppercase mb-1.5 flex items-center gap-1.5"><Download size={10} /> 引用</div>
+                       <div className="text-3xl font-black text-white">{component.copyCount}</div>
                     </div>
-                    <div className="p-5 bg-white/5 rounded-[1.5rem] border border-white/10 hover:bg-white/10 transition-colors">
-                       <div className="text-[9px] text-slate-400 font-black uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
-                          <Eye size={10} /> 授权费
-                       </div>
-                       <div className="text-3xl font-black text-white tabular-nums">
-                          {component.pointsPerCopy} <span className="text-[9px] opacity-40 uppercase">pts</span>
-                       </div>
+                    <div className="p-5 bg-white/5 rounded-[1.5rem] border border-white/10">
+                       <div className="text-[9px] text-slate-400 font-black uppercase mb-1.5 flex items-center gap-1.5"><Coins size={10} /> 营收</div>
+                       <div className="text-2xl font-black text-theme">{component.totalPointsEarned}</div>
                     </div>
                  </div>
-
-                 <div className="space-y-4">
-                    <div className="flex justify-between items-end">
-                       <div className="flex flex-col">
-                          <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">资产总营收</span>
-                          <span className="text-4xl font-black text-theme tracking-tighter tabular-nums">
-                             {component.totalPointsEarned.toLocaleString()} <span className="text-xs uppercase opacity-40 ml-1">pts</span>
-                          </span>
-                       </div>
-                       <div className="w-10 h-10 bg-theme/20 rounded-xl flex items-center justify-center text-theme border border-theme/20 animate-pulse">
-                          <Sparkles size={18} />
-                       </div>
-                    </div>
-                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden flex">
-                       <div className="bg-theme h-full w-[72%] rounded-full shadow-[0_0_8px_rgba(79,70,229,0.5)]"></div>
-                    </div>
+                 <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div className="bg-theme h-full w-[65%]"></div>
                  </div>
               </div>
            </div>
 
-           {/* 作者卡片 */}
-           <div className="bg-white rounded-[2.5rem] border border-slate-100 p-8 shadow-sm hover:border-slate-200 transition-all">
-              <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Artisan Profile</div>
-              <div className="flex items-center gap-4 mb-8">
-                 <div className="relative group">
-                    <img 
-                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${component.authorAvatar}`} 
-                      className="w-16 h-16 bg-slate-50 border border-slate-100 rounded-[1.5rem] group-hover:scale-105 transition-transform" 
-                      alt="author"
-                    />
-                    <div className="absolute -bottom-1 -right-1 p-1 bg-theme rounded-lg text-white shadow-lg ring-4 ring-white">
-                       <ShieldCheck size={14} />
-                    </div>
-                 </div>
+           <div className="bg-white rounded-[2.5rem] border border-slate-100 p-8">
+              <div className="flex items-center gap-4 mb-6">
+                 <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${component.authorAvatar}`} className="w-14 h-14 bg-slate-50 border border-slate-100 rounded-2xl" alt="avatar" />
                  <div>
-                    <h4 className="text-lg font-black text-slate-900 tracking-tight">{component.authorName}</h4>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                       <span className="w-1.5 h-1.5 rounded-full bg-theme"></span>
-                       <span className="text-[10px] font-black text-theme uppercase tracking-tight">Grandmaster Creator</span>
-                    </div>
+                    <h4 className="font-black text-slate-900">{component.authorName}</h4>
+                    <span className="text-[10px] font-black text-theme uppercase">Grandmaster</span>
                  </div>
               </div>
-              <p className="text-[11px] text-slate-500 font-medium leading-relaxed mb-8">
-                该创作者是 DevFront 实验室的核心贡献者，其组件已被用于全球 40+ 关键业务系统中。
-              </p>
-              <button className="w-full py-3.5 border border-slate-200 rounded-2xl text-[11px] font-black text-slate-600 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all flex items-center justify-center gap-2 group">
-                 查看他的数字足迹 <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+              <button className="w-full py-3.5 border border-slate-200 rounded-2xl text-[11px] font-black text-slate-600 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all">
+                 查看他的数字足迹
               </button>
            </div>
-
-           {/* 合规建议 */}
-           <div className="bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100/50">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4">商业及生产环境合规</label>
-              <div className="space-y-4">
-                 <div className="flex gap-4">
-                    <div className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-emerald-500 shrink-0 shadow-sm"><Box size={16} /></div>
-                    <div>
-                       <h6 className="text-[11px] font-black text-slate-900">MIT 衍生授权</h6>
-                       <p className="text-[10px] text-slate-400 font-medium mt-0.5">允许在所有组织内部商业项目中使用并二次开发。</p>
-                    </div>
-                 </div>
-                 <div className="p-4 bg-white/80 rounded-2xl border border-slate-200/50 flex gap-3">
-                    <AlertCircle size={14} className="text-amber-500 shrink-0" />
-                    <p className="text-[9px] text-slate-500 font-medium leading-relaxed">
-                       注意：该组件依赖 Tailwind CSS v3.4+。在较低版本的样式框架中可能需要进行微量适配。
-                    </p>
-                 </div>
-              </div>
-           </div>
-
         </div>
       </div>
-      
-      <style>{`
-        .custom-scroll::-webkit-scrollbar { width: 5px; }
-        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-      `}</style>
     </div>
   );
 };
