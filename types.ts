@@ -3,7 +3,7 @@ export enum UserRole {
   ADMIN = 'ADMIN',
   AUTHOR = 'AUTHOR',
   EVALUATOR = 'EVALUATOR',
-  DEVELOPER = 'AUTHOR' // 兼容旧代码
+  DEVELOPER = 'AUTHOR' 
 }
 
 export type ContributionLevel = 'Bronze' | 'Silver' | 'Gold' | 'Master' | 'Grandmaster';
@@ -21,7 +21,14 @@ export interface UserProfile {
   lastActive: string;
 }
 
-export type ComponentSubmissionStatus = 'pending' | 'accepted' | 'rejected';
+export type ComponentSubmissionStatus = 'pending' | 'accepted' | 'rejected' | 'published_unscored';
+
+export interface ScoreBreakdown {
+  design: number;      // 权重 25%
+  code: number;        // 权重 30%
+  usability: number;   // 权重 25%
+  innovation: number;  // 权重 20%
+}
 
 export interface ComponentSubmission {
   id: number;
@@ -31,7 +38,11 @@ export interface ComponentSubmission {
   coverImage?: string | null;
   status: ComponentSubmissionStatus;
   templateType: 'vue' | 'html';
-  score?: number | null;
+  
+  // 评分体系
+  score?: number | null; 
+  scoreBreakdown?: ScoreBreakdown;
+  
   rejectReason?: string | null;
   appealText?: string | null;
   appealReply?: string | null;
@@ -43,9 +54,10 @@ export interface ComponentSubmission {
   tone: string;          
   
   // 经济系统字段
-  copyCount: number;        // 被复制代码次数
-  pointsPerCopy: number;    // 单次复制所需积分
-  totalPointsEarned: number; // 组件总收益积分
+  copyCount: number;        
+  basePrice: number;        // 基础定价 (由组件类型决定)
+  pointsPerCopy: number;    // 最终计算出的解锁积分
+  totalPointsEarned: number; 
   
   tags?: string[] | null;
   createdAt: string;

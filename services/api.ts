@@ -12,42 +12,19 @@ let mockSubmissions: ComponentSubmission[] = [
   {
     id: 101,
     title: '智慧医疗 - 患者生命体征看板',
-    description: '采用高对比度布局设计，适配 4K 医疗监护屏，实时展示多维生命体征指标。',
-    jsxCode: `<template>
-  <div class="p-8 bg-slate-950 rounded-[2.5rem] border border-blue-500/20 shadow-2xl overflow-hidden relative">
-    <div class="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 blur-[100px] rounded-full"></div>
-    <div class="flex justify-between items-center mb-10">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg">
-          <iconify-icon icon="ph:heartbeat-duotone" width="24"></iconify-icon>
-        </div>
-        <div>
-          <h3 class="text-white font-black tracking-tight">VITAL SIGNS MONITOR</h3>
-          <p class="text-[10px] text-blue-400 font-bold uppercase tracking-widest">Real-time Telemetry</p>
-        </div>
-      </div>
-    </div>
-    <div class="grid grid-cols-2 gap-6">
-      <div class="p-6 bg-white/5 rounded-3xl border border-white/10 text-rose-500">
-        <span class="text-[10px] text-slate-400 font-black uppercase">Heart Rate</span>
-        <div class="text-4xl font-black mt-2">72 bpm</div>
-      </div>
-      <div class="p-6 bg-white/5 rounded-3xl border border-white/10 text-emerald-500">
-        <span class="text-[10px] text-slate-400 font-black uppercase">SpO2 Level</span>
-        <div class="text-4xl font-black mt-2">98 %</div>
-      </div>
-    </div>
-  </div>
-</template>`,
+    description: '采用高对比度布局设计，适配 4K 医疗监护屏。',
+    jsxCode: `<template><div>Medical Dashboard</div></template>`,
     status: 'accepted',
     templateType: 'vue',
-    score: 98,
+    score: 9.2,
+    scoreBreakdown: { design: 9.5, code: 9, usability: 9.2, innovation: 8.8 },
     industry: 'medical',
     category: 'Charts & Visualization',
     scenario: 'dashboard',
     tone: 'dark-tech',
     copyCount: 154,
-    pointsPerCopy: 50,
+    basePrice: 50,
+    pointsPerCopy: 58, 
     totalPointsEarned: 7700,
     authorName: 'Alex Rivera',
     authorAvatar: 'Alex',
@@ -57,8 +34,8 @@ let mockSubmissions: ComponentSubmission[] = [
   {
     id: 102,
     title: '金融风控 - 异常交易追踪图谱',
-    description: '复杂的 D3.js 关系图谱，用于可视化资金流向及异常节点。',
-    jsxCode: `<template><div class="p-8 bg-white text-slate-900"><h3>Financial Graph Placeholder</h3></div></template>`,
+    description: '复杂的 D3.js 关系图谱。',
+    jsxCode: `<template><div class="p-8">Financial Graph</div></template>`,
     status: 'pending',
     templateType: 'vue',
     industry: 'finance',
@@ -66,7 +43,8 @@ let mockSubmissions: ComponentSubmission[] = [
     scenario: 'admin',
     tone: 'modern',
     copyCount: 0,
-    pointsPerCopy: 200,
+    basePrice: 100,
+    pointsPerCopy: 100,
     totalPointsEarned: 0,
     authorName: 'Sarah Chen',
     authorAvatar: 'Sarah',
@@ -108,6 +86,8 @@ export const componentService = {
       ...payload, 
       id: Math.floor(Math.random() * 1000), 
       status: 'pending', 
+      basePrice: 50,
+      pointsPerCopy: 50,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     } as ComponentSubmission;

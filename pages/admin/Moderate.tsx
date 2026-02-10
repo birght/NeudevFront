@@ -1,27 +1,13 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  ShieldCheck, 
-  Search, 
-  Filter, 
-  Clock, 
-  User, 
-  ChevronRight, 
-  Eye, 
-  CheckCircle2, 
-  XCircle, 
-  AlertCircle,
-  X,
-  Code2,
-  Trophy,
-  MessageSquareText,
-  Loader2,
-  Terminal,
-  Zap,
-  ChevronDown
+  ShieldCheck, Search, Filter, Clock, Eye, 
+  CheckCircle2, XCircle, AlertCircle, X, Code2, 
+  Trophy, Loader2, Terminal, Zap, ChevronDown,
+  Palette, FileCode, HandMetal, Lightbulb, TrendingUp, Coins
 } from 'lucide-react';
 import { componentService } from '../../services/api';
-import { ComponentSubmission } from '../../types';
+import { ComponentSubmission, ScoreBreakdown } from '../../types';
 
 const Moderate: React.FC = () => {
   const [submissions, setSubmissions] = useState<ComponentSubmission[]>([]);
@@ -30,17 +16,32 @@ const Moderate: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItem, setSelectedItem] = useState<ComponentSubmission | null>(null);
   
-  // 审核表单状态
-  const [reviewScore, setReviewScore] = useState(90);
+  // 4D 评分状态
+  const [scores, setScores] = useState<ScoreBreakdown>({
+    design: 8.0,
+    code: 8.0,
+    usability: 8.0,
+    innovation: 8.0
+  });
+
+  const [basePrice, setBasePrice] = useState(50);
   const [rejectReason, setRejectReason] = useState('');
-  const [appealReply, setAppealReply] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  useEffect(() => {
-    loadSubmissions();
-  }, []);
+  // 计算最终得分与预估价格
+  const calculateFinalMetrics = () => {
+    const finalScore = (scores.design * 0.25) + (scores.code * 0.3) + (scores.usability * 0.25) + (scores.innovation * 0.2);
+    // 质量系数 = clamp(score / 8, 0.7, 1.3)
+    const qualityFactor = Math.min(Math.max(finalScore / 8, 0.7), 1.3);
+    const estimatedPrice = Math.round(basePrice * qualityFactor);
+    return { finalScore: finalScore.toFixed(1), qualityFactor: qualityFactor.toFixed(2), estimatedPrice };
+  };
+
+  const metrics = calculateFinalMetrics();
+
+  useEffect(() => { loadSubmissions(); }, []);
 
   const loadSubmissions = async () => {
     setLoading(true);
@@ -58,19 +59,22 @@ const Moderate: React.FC = () => {
 
   const handleOpenReview = (item: ComponentSubmission) => {
     setSelectedItem(item);
-    setReviewScore(item.score || 90);
+    setScores(item.scoreBreakdown || { design: 8.0, code: 8.0, usability: 8.0, innovation: 8.0 });
+    setBasePrice(item.basePrice || 50);
     setRejectReason(item.rejectReason || '');
-    setAppealReply(item.appealReply || '');
   };
 
   const handleReviewAction = async (status: 'accepted' | 'rejected') => {
     if (!selectedItem) return;
     setIsSubmitting(true);
     
-    const payload: Partial<ComponentSubmission> = { status };
-    if (status === 'accepted') payload.score = reviewScore;
-    if (status === 'rejected') payload.rejectReason = rejectReason;
-    if (selectedItem.appealText) payload.appealReply = appealReply;
+    const payload: Partial<ComponentSubmission> = { 
+      status,
+      score: status === 'accepted' ? parseFloat(metrics.finalScore) : null,
+      scoreBreakdown: status === 'accepted' ? scores : undefined,
+      pointsPerCopy: status === 'accepted' ? metrics.estimatedPrice : selectedItem.pointsPerCopy,
+      rejectReason: status === 'rejected' ? rejectReason : null
+    };
 
     const success = await componentService.updateSubmissionStatus(selectedItem.id, payload);
     if (success) {
@@ -80,7 +84,6 @@ const Moderate: React.FC = () => {
     setIsSubmitting(false);
   };
 
-  // 沙盒预览逻辑
   useEffect(() => {
     if (selectedItem && iframeRef.current) {
       const codeBase64 = btoa(unescape(encodeURIComponent(selectedItem.jsxCode)));
@@ -123,18 +126,17 @@ const Moderate: React.FC = () => {
   }, [selectedItem]);
 
   return (
-    <div className="h-full flex flex-col relative">
-      
-      {/* 1. Header & Filters */}
+    <div className="h-full flex flex-col relative bg-white">
+      {/* 1. Header */}
       <div className="p-8 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shrink-0">
          <div>
             <div className="flex items-center gap-3 mb-1">
                <div className="p-2 bg-slate-900 text-white rounded-xl shadow-lg">
                   <ShieldCheck size={20} />
                </div>
-               <h2 className="text-2xl font-black text-slate-900 tracking-tight">审核管理中央</h2>
+               <h2 className="text-2xl font-black text-slate-900 tracking-tight">资产审计工作台</h2>
             </div>
-            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Decision Hub & Quality Control</p>
+            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Evaluator Workspace & Pricing Engine</p>
          </div>
 
          <div className="flex items-center gap-4 w-full md:w-auto">
@@ -148,19 +150,15 @@ const Moderate: React.FC = () => {
                />
                <Search size={14} className="absolute left-4 top-3.5 text-slate-400" />
             </div>
-            <button className="p-3 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-theme transition-all">
-               <Filter size={18} />
-            </button>
          </div>
       </div>
 
       {/* 2. Tabs */}
       <div className="px-8 py-4 border-b border-slate-100 flex gap-8 shrink-0">
          {[
-           { id: 'pending', label: '待审核', count: submissions.filter(s => s.status === 'pending').length },
-           { id: 'accepted', label: '已录入', count: submissions.filter(s => s.status === 'accepted').length },
-           { id: 'rejected', label: '已驳回', count: submissions.filter(s => s.status === 'rejected').length },
-           { id: 'all', label: '全部列表', count: submissions.length }
+           { id: 'pending', label: '待评审', count: submissions.filter(s => s.status === 'pending').length },
+           { id: 'accepted', label: '已上线', count: submissions.filter(s => s.status === 'accepted').length },
+           { id: 'all', label: '全量库', count: submissions.length }
          ].map(tab => (
            <button 
              key={tab.id}
@@ -176,226 +174,180 @@ const Moderate: React.FC = () => {
          ))}
       </div>
 
-      {/* 3. Data Table */}
+      {/* 3. List */}
       <div className="flex-1 overflow-y-auto custom-scroll">
          {loading ? (
-            <div className="flex flex-col items-center justify-center h-full gap-4 text-slate-300">
-               <Loader2 size={40} className="animate-spin" />
-               <span className="text-[10px] font-black uppercase">同步审核队列...</span>
-            </div>
-         ) : filteredSubmissions.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-slate-300">
-               <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center mb-6">
-                  <CheckCircle2 size={40} />
-               </div>
-               <h3 className="text-xl font-black text-slate-900 tracking-tight">队列已清空</h3>
-               <p className="text-sm font-medium mt-1">目前没有需要审核的艺术品投稿。</p>
+            <div className="flex flex-col items-center justify-center h-full gap-4">
+               <Loader2 size={40} className="animate-spin text-theme" />
+               <span className="text-[10px] font-black uppercase text-slate-400">正在载入评审队列...</span>
             </div>
          ) : (
-            <table className="w-full text-left border-collapse">
-               <thead>
-                  <tr className="bg-slate-50/30">
-                     <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">组件资产信息</th>
-                     <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">作者</th>
-                     <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">元数据</th>
-                     <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">投稿时间</th>
-                     <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">操作</th>
-               </tr>
-               </thead>
-               <tbody className="divide-y divide-slate-50">
-                  {filteredSubmissions.map(sub => (
-                     <tr key={sub.id} className="group hover:bg-slate-50/50 transition-colors">
-                        <td className="px-8 py-6">
-                           <div className="flex items-center gap-4">
-                              <div className="w-14 h-10 bg-slate-100 rounded-lg flex items-center justify-center border border-slate-200 overflow-hidden relative">
-                                 {sub.coverImage ? <img src={sub.coverImage} className="w-full h-full object-cover" /> : <Code2 size={16} className="text-slate-300" />}
-                                 {sub.appealText && <div className="absolute top-0 right-0 w-2 h-2 bg-rose-500 rounded-full animate-pulse ring-2 ring-white"></div>}
-                              </div>
-                              <div>
-                                 <h4 className="text-sm font-black text-slate-900 tracking-tight">{sub.title}</h4>
-                                 <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase ${sub.status === 'pending' ? 'bg-amber-100 text-amber-600' : sub.status === 'accepted' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
-                                    {sub.status}
-                                 </span>
-                              </div>
+            <div className="p-8 grid grid-cols-1 gap-4">
+               {filteredSubmissions.map(sub => (
+                  <div key={sub.id} className="group flex items-center justify-between p-6 bg-white border border-slate-100 rounded-[2rem] hover:shadow-xl transition-all">
+                     <div className="flex items-center gap-6">
+                        <div className="w-16 h-12 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100 overflow-hidden">
+                           {sub.coverImage ? <img src={sub.coverImage} className="w-full h-full object-cover" /> : <Terminal className="text-slate-300" size={20} />}
+                        </div>
+                        <div>
+                           <h4 className="text-sm font-black text-slate-900">{sub.title}</h4>
+                           <div className="flex items-center gap-3 mt-1">
+                              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{sub.authorName}</span>
+                              <span className="w-1 h-1 rounded-full bg-slate-200"></span>
+                              <span className="text-[9px] font-black text-theme uppercase tracking-widest">{sub.category}</span>
                            </div>
-                        </td>
-                        <td className="px-8 py-6">
-                           <div className="flex items-center gap-3">
-                              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${sub.authorAvatar}`} className="w-8 h-8 rounded-xl bg-slate-50" />
-                              <span className="text-xs font-bold text-slate-700">{sub.authorName}</span>
+                        </div>
+                     </div>
+                     <div className="flex items-center gap-8">
+                        {sub.score && (
+                           <div className="text-right">
+                              <div className="text-[9px] font-black text-slate-400 uppercase">Quality Score</div>
+                              <div className="text-lg font-black text-slate-900">{sub.score}</div>
                            </div>
-                        </td>
-                        <td className="px-8 py-6">
-                           <div className="flex flex-col gap-1">
-                              <span className="text-[10px] font-black text-slate-400 uppercase">{sub.industry}</span>
-                              <span className="text-[10px] font-bold text-theme">{sub.category}</span>
-                           </div>
-                        </td>
-                        <td className="px-8 py-6">
-                           <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400">
-                              <Clock size={12} /> {new Date(sub.createdAt).toLocaleDateString()}
-                           </div>
-                        </td>
-                        <td className="px-8 py-6 text-right">
-                           <button 
-                             onClick={() => handleOpenReview(sub)}
-                             className="px-4 py-2 bg-slate-900 text-white text-[10px] font-black rounded-xl hover:bg-theme transition-all shadow-lg active:scale-95 flex items-center gap-2 ml-auto"
-                           >
-                              <Eye size={12} /> 进入审核
-                           </button>
-                        </td>
-                     </tr>
-                  ))}
-               </tbody>
-            </table>
+                        )}
+                        <button 
+                          onClick={() => handleOpenReview(sub)}
+                          className="px-6 py-2.5 bg-slate-900 text-white text-[10px] font-black rounded-xl hover:bg-theme transition-all shadow-lg active:scale-95 flex items-center gap-2"
+                        >
+                           <Eye size={14} /> 进入深度评审
+                        </button>
+                     </div>
+                  </div>
+               ))}
+            </div>
          )}
       </div>
 
-      {/* 4. Review Modal Overlay */}
+      {/* 4. Deep Review Workspace (Modal) */}
       {selectedItem && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-end animate-in fade-in duration-300">
-           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setSelectedItem(null)}></div>
-           
-           <div className="relative w-full max-w-5xl h-screen bg-white shadow-2xl flex flex-col animate-in slide-in-from-right duration-500">
-              
-              {/* Modal Header */}
-              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white shrink-0">
-                 <div className="flex items-center gap-4">
-                    <div className="p-2.5 bg-slate-50 rounded-xl text-slate-400">
-                       <Terminal size={20} />
-                    </div>
-                    <div>
-                       <h3 className="text-xl font-black text-slate-900 tracking-tight">{selectedItem.title}</h3>
-                       <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">正在进行质量与安全审计 (Audit Workflow)</p>
-                    </div>
-                 </div>
-                 <button 
-                   onClick={() => setSelectedItem(null)}
-                   className="p-3 bg-slate-50 text-slate-400 rounded-full hover:bg-rose-50 hover:text-rose-500 transition-all"
-                 >
-                    <X size={20} />
-                 </button>
-              </div>
+         <div className="fixed inset-0 z-[100] flex items-center justify-end animate-in fade-in duration-300">
+            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setSelectedItem(null)}></div>
+            
+            <div className="relative w-full max-w-6xl h-screen bg-white shadow-2xl flex flex-col animate-in slide-in-from-right duration-500">
+               <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white shrink-0">
+                  <div className="flex items-center gap-4">
+                     <div className="p-2.5 bg-indigo-50 text-theme rounded-xl">
+                        <Trophy size={20} />
+                     </div>
+                     <div>
+                        <h3 className="text-xl font-black text-slate-900 tracking-tight">{selectedItem.title}</h3>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">多维价值评估模型 (Value Estimation Model)</p>
+                     </div>
+                  </div>
+                  <button onClick={() => setSelectedItem(null)} className="p-3 bg-slate-50 text-slate-400 rounded-full hover:bg-rose-50 hover:text-rose-500 transition-all">
+                     <X size={20} />
+                  </button>
+               </div>
 
-              {/* Modal Body */}
-              <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
-                 
-                 {/* Left: Preview Sandbox */}
-                 <div className="flex-grow p-8 bg-slate-50 flex flex-col gap-4 overflow-hidden">
-                    <div className="flex items-center justify-between">
-                       <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                          <Zap size={14} className="text-amber-500" /> 交互沙盒实时预览
-                       </span>
-                       <div className="flex gap-2">
-                          <span className="px-2 py-0.5 bg-white border border-slate-200 rounded text-[9px] font-black uppercase text-slate-500">Vue 3 SFC</span>
-                       </div>
-                    </div>
-                    <div className="flex-grow bg-white rounded-[3rem] border border-slate-200 shadow-xl overflow-hidden relative">
-                       <iframe ref={iframeRef} className="w-full h-full border-none" title="moderate-preview" />
-                    </div>
-                    
-                    {/* Source Code Inspector */}
-                    <div className="h-48 bg-[#0b0e14] rounded-3xl p-6 border border-slate-800 relative overflow-hidden group">
-                       <div className="absolute top-4 right-4 text-emerald-500/20"><Code2 size={40} /></div>
-                       <pre className="text-emerald-400 font-mono text-[10px] leading-relaxed h-full overflow-y-auto custom-scroll">
-                          {selectedItem.jsxCode}
-                       </pre>
-                    </div>
-                 </div>
+               <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
+                  {/* Left: Preview & Code */}
+                  <div className="flex-grow p-8 bg-slate-50 flex flex-col gap-6 overflow-hidden">
+                     <div className="flex-grow bg-white rounded-[3rem] border border-slate-200 shadow-xl overflow-hidden relative">
+                        <iframe ref={iframeRef} className="w-full h-full border-none" title="eval-preview" />
+                     </div>
+                     <div className="h-40 bg-[#0b0e14] rounded-3xl p-6 border border-slate-800 relative">
+                        <pre className="text-emerald-400 font-mono text-[10px] leading-relaxed h-full overflow-y-auto custom-scroll">
+                           {selectedItem.jsxCode}
+                        </pre>
+                     </div>
+                  </div>
 
-                 {/* Right: Decision Panel */}
-                 <div className="w-full lg:w-96 border-l border-slate-100 flex flex-col overflow-y-auto custom-scroll p-8 space-y-8 shrink-0">
-                    
-                    {/* Metadata Section */}
-                    <div>
-                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-4">资产元数据</label>
-                       <div className="space-y-3">
-                          <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
-                             <span className="text-[10px] font-bold text-slate-500">作者</span>
-                             <span className="text-xs font-black text-slate-900">{selectedItem.authorName}</span>
-                          </div>
-                          <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
-                             <span className="text-[10px] font-bold text-slate-500">行业分类</span>
-                             <span className="text-xs font-black text-theme uppercase tracking-tighter">{selectedItem.industry}</span>
-                          </div>
-                       </div>
-                    </div>
+                  {/* Right: Multi-D Scoring Panel */}
+                  <div className="w-full lg:w-[400px] border-l border-slate-100 flex flex-col overflow-y-auto custom-scroll p-8 bg-white shrink-0">
+                     
+                     {/* Final Dashboard */}
+                     <div className="p-8 bg-slate-900 rounded-[2.5rem] text-white mb-8 relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-8 opacity-5 -rotate-12 group-hover:scale-125 transition-transform">
+                           <Zap size={100} />
+                        </div>
+                        <div className="relative z-10 flex flex-col items-center text-center">
+                           <span className="text-[10px] font-black text-theme uppercase tracking-[0.2em] mb-4">最终质量加权分</span>
+                           <div className="text-6xl font-black mb-2 tracking-tighter tabular-nums">{metrics.finalScore}</div>
+                           <div className="flex items-center gap-4 mt-4 w-full pt-6 border-t border-white/10">
+                              <div className="flex-1">
+                                 <div className="text-[9px] text-slate-400 font-black uppercase mb-1">价格系数</div>
+                                 <div className="text-lg font-black text-emerald-400">x{metrics.qualityFactor}</div>
+                              </div>
+                              <div className="w-px h-8 bg-white/10"></div>
+                              <div className="flex-1">
+                                 <div className="text-[9px] text-slate-400 font-black uppercase mb-1">预估积分价格</div>
+                                 <div className="text-lg font-black text-theme">{metrics.estimatedPrice} <span className="text-[10px] opacity-40">pts</span></div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
 
-                    {/* Appeal Section (If exists) */}
-                    {selectedItem.appealText && (
-                       <div className="p-6 bg-rose-50 border border-rose-100 rounded-[2rem] space-y-3 animate-in slide-in-from-top-4">
-                          <div className="flex items-center gap-2 text-rose-600 font-black text-[10px] uppercase tracking-widest">
-                             <AlertCircle size={14} /> 紧急异议申诉
-                          </div>
-                          <p className="text-xs font-medium text-rose-900/70 leading-relaxed italic">
-                             "{selectedItem.appealText}"
-                          </p>
-                          <textarea 
-                            value={appealReply}
-                            onChange={e => setAppealReply(e.target.value)}
-                            placeholder="填写申诉回复内容..."
-                            className="w-full p-4 bg-white border border-rose-100 rounded-2xl text-xs font-medium outline-none focus:ring-4 focus:ring-rose-200 transition-all min-h-[100px]"
-                          />
-                       </div>
-                    )}
+                     {/* Sliders */}
+                     <div className="space-y-8">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] block">多维评审度量 (JUDGE PANEL)</label>
+                        
+                        {[
+                           { id: 'design', label: 'Design (25%)', icon: Palette, color: 'text-rose-500', bg: 'bg-rose-50' },
+                           { id: 'code', label: 'Code Quality (30%)', icon: FileCode, color: 'text-indigo-500', bg: 'bg-indigo-50' },
+                           { id: 'usability', label: 'Usability (25%)', icon: HandMetal, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                           { id: 'innovation', label: 'Innovation (20%)', icon: Lightbulb, color: 'text-amber-500', bg: 'bg-amber-50' }
+                        ].map(dim => (
+                           <div key={dim.id} className="space-y-3">
+                              <div className="flex justify-between items-end">
+                                 <div className="flex items-center gap-2">
+                                    <div className={`p-1.5 ${dim.bg} ${dim.color} rounded-lg`}><dim.icon size={14} /></div>
+                                    <span className="text-xs font-black text-slate-900">{dim.label}</span>
+                                 </div>
+                                 <span className="text-sm font-black text-slate-900">{(scores as any)[dim.id]}</span>
+                              </div>
+                              <input 
+                                type="range" min="0" max="10" step="0.5" 
+                                value={(scores as any)[dim.id]} 
+                                onChange={e => setScores({ ...scores, [dim.id]: parseFloat(e.target.value) })}
+                                className={`w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-slate-900 bg-slate-100`}
+                              />
+                           </div>
+                        ))}
 
-                    {/* Decision Flow */}
-                    <div className="space-y-6">
-                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block">审核决策处理</label>
-                       
-                       {/* Acceptance Score */}
-                       <div className="p-6 bg-emerald-50 border border-emerald-100 rounded-[2.5rem] space-y-4">
-                          <div className="flex justify-between items-end">
-                             <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">资产质量评分</span>
-                             <span className="text-4xl font-black text-emerald-700 tabular-nums">{reviewScore}<span className="text-xs opacity-50">/100</span></span>
-                          </div>
-                          <input 
-                            type="range" min="0" max="100" 
-                            value={reviewScore} 
-                            onChange={e => setReviewScore(parseInt(e.target.value))}
-                            className="w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600" 
-                          />
-                          <button 
-                            onClick={() => handleReviewAction('accepted')}
-                            disabled={isSubmitting}
-                            className="w-full py-4 bg-emerald-600 text-white text-xs font-black rounded-2xl shadow-xl shadow-emerald-200 hover:bg-emerald-700 transition-all flex items-center justify-center gap-2"
-                          >
-                             {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
-                             确认采纳并上架
-                          </button>
-                       </div>
+                        <div className="pt-6 space-y-4">
+                           <div className="flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                              <span>基准定价基数</span>
+                              <div className="flex items-center gap-2">
+                                 <button onClick={() => setBasePrice(Math.max(10, basePrice - 10))} className="w-6 h-6 bg-slate-100 rounded flex items-center justify-center">-</button>
+                                 <span className="text-slate-900">{basePrice}</span>
+                                 <button onClick={() => setBasePrice(basePrice + 10)} className="w-6 h-6 bg-slate-100 rounded flex items-center justify-center">+</button>
+                              </div>
+                           </div>
+                           
+                           <button 
+                             disabled={isSubmitting}
+                             onClick={() => handleReviewAction('accepted')}
+                             className="w-full py-4 bg-emerald-600 text-white text-xs font-black rounded-2xl shadow-xl shadow-emerald-200 hover:bg-emerald-700 transition-all flex items-center justify-center gap-2"
+                           >
+                              {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
+                              确认定价并准入
+                           </button>
 
-                       {/* Rejection */}
-                       <div className="p-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] space-y-4">
-                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">驳回说明 (驳回时必填)</span>
-                          <textarea 
-                            value={rejectReason}
-                            onChange={e => setRejectReason(e.target.value)}
-                            placeholder="列出未通过的具体审计项，例如：CSS 样式污染、无障碍支持缺失..."
-                            className="w-full p-4 bg-white border border-slate-200 rounded-2xl text-xs font-medium outline-none focus:ring-4 focus:ring-theme/5 transition-all min-h-[100px]"
-                          />
-                          <button 
-                            onClick={() => handleReviewAction('rejected')}
-                            disabled={isSubmitting || !rejectReason}
-                            className="w-full py-4 border border-rose-200 text-rose-600 text-xs font-black rounded-2xl hover:bg-rose-500 hover:text-white hover:border-transparent transition-all flex items-center justify-center gap-2"
-                          >
-                             {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <XCircle size={16} />}
-                             驳回投稿
-                          </button>
-                       </div>
-                    </div>
-
-                 </div>
-              </div>
-           </div>
-        </div>
+                           <div className="pt-4 border-t border-slate-100">
+                              <textarea 
+                                value={rejectReason}
+                                onChange={e => setRejectReason(e.target.value)}
+                                placeholder="如果驳回，请填写详细理由..."
+                                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl text-[11px] font-medium min-h-[80px] outline-none focus:ring-4 focus:ring-rose-50"
+                              />
+                              <button 
+                                onClick={() => handleReviewAction('rejected')}
+                                className="w-full py-3 mt-3 border border-rose-200 text-rose-600 text-[10px] font-black rounded-2xl hover:bg-rose-50 transition-all uppercase tracking-widest"
+                              >
+                                驳回投稿
+                              </button>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
       )}
 
       <style>{`
-        .custom-scroll::-webkit-scrollbar { width: 5px; }
-        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-        .rounded-1.5xl { border-radius: 0.875rem; }
       `}</style>
     </div>
   );

@@ -9,7 +9,8 @@ import {
   Layers, 
   ShieldCheck, 
   Star,
-  Users
+  Users,
+  Trophy
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -20,7 +21,7 @@ const PERMISSION_MODULES = [
   { id: 'overview', name: '社区数据洞察', icon: LayoutDashboard, path: '/admin/overview' },
   { id: 'contribute', name: '创作新艺术品', icon: PlusCircle, path: '/admin/contribute' },
   { id: 'my-items', name: '个人贡献资产', icon: Layers, path: '/admin/my-items' },
-  { id: 'moderate', name: '审核管理中央', icon: ClipboardCheck, path: '/admin/moderate' },
+  { id: 'moderate', name: '资产审计中心', icon: Trophy, path: '/admin/moderate' },
   { id: 'users', name: '用户管理中心', icon: Users, path: '/admin/users' },
   { id: 'roles', name: '角色权限配置', icon: ShieldCheck, path: '/admin/roles' },
 ];
@@ -28,7 +29,7 @@ const PERMISSION_MODULES = [
 const rolePermissions: Record<UserRole, string[]> = {
   [UserRole.ADMIN]: ['overview', 'contribute', 'my-items', 'moderate', 'users', 'roles'],
   [UserRole.AUTHOR]: ['overview', 'contribute', 'my-items'],
-  [UserRole.EVALUATOR]: ['overview', 'moderate'],
+  [UserRole.EVALUATOR]: ['overview', 'moderate'], // 评委可以查看概览和审计
 };
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ userRole }) => {
@@ -53,14 +54,14 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ userRole }) => {
               <div className="flex items-center gap-3">
                 <module.icon size={18} /> {module.name}
               </div>
-              {module.id === 'moderate' && <span className="bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-full">12</span>}
+              {module.id === 'moderate' && <span className="bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-full font-black">2</span>}
             </Link>
           ))}
 
           <div className="mt-12 p-6 bg-slate-900 rounded-3xl text-white relative overflow-hidden">
              <div className="absolute -top-4 -right-4 w-24 h-24 bg-theme/30 blur-2xl rounded-full"></div>
              <h4 className="text-xs font-black mb-2 flex items-center gap-2 relative z-10"><Star size={14} className="text-amber-400" /> 贡献等级</h4>
-             <p className="text-[10px] text-slate-400 leading-relaxed mb-4 relative z-10">当前等级：黄金工匠<br/>还需 3 个组件升级至大师</p>
+             <p className="text-[10px] text-slate-400 leading-relaxed mb-4 relative z-10">当前身份：{userRole}<br/>负责维护社区资产质量</p>
              <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
                 <div className="bg-theme w-2/3 h-full"></div>
              </div>
