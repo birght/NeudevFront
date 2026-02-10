@@ -8,7 +8,7 @@ import {
 } from '../types';
 
 // 模拟 API 响应
-const mockSubmissions: ComponentSubmission[] = [
+let mockSubmissions: ComponentSubmission[] = [
   {
     id: 101,
     title: '智慧医疗 - 患者生命体征看板',
@@ -26,25 +26,15 @@ const mockSubmissions: ComponentSubmission[] = [
           <p class="text-[10px] text-blue-400 font-bold uppercase tracking-widest">Real-time Telemetry</p>
         </div>
       </div>
-      <div class="flex gap-2">
-        <div class="px-3 py-1 bg-white/5 rounded-full text-[10px] text-white/40 font-bold border border-white/5">DEVICE: MED-704</div>
-      </div>
     </div>
-    
     <div class="grid grid-cols-2 gap-6">
-      <div class="p-6 bg-white/5 rounded-3xl border border-white/10">
+      <div class="p-6 bg-white/5 rounded-3xl border border-white/10 text-rose-500">
         <span class="text-[10px] text-slate-400 font-black uppercase">Heart Rate</span>
-        <div class="flex items-baseline gap-2 mt-2 text-rose-500">
-          <span class="text-4xl font-black">72</span>
-          <span class="text-xs font-bold uppercase">bpm</span>
-        </div>
+        <div class="text-4xl font-black mt-2">72 bpm</div>
       </div>
-      <div class="p-6 bg-white/5 rounded-3xl border border-white/10">
+      <div class="p-6 bg-white/5 rounded-3xl border border-white/10 text-emerald-500">
         <span class="text-[10px] text-slate-400 font-black uppercase">SpO2 Level</span>
-        <div class="flex items-baseline gap-2 mt-2 text-emerald-500">
-          <span class="text-4xl font-black">98</span>
-          <span class="text-xs font-bold uppercase">%</span>
-        </div>
+        <div class="text-4xl font-black mt-2">98 %</div>
       </div>
     </div>
   </div>
@@ -63,6 +53,25 @@ const mockSubmissions: ComponentSubmission[] = [
     authorAvatar: 'Alex',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
+  },
+  {
+    id: 102,
+    title: '金融风控 - 异常交易追踪图谱',
+    description: '复杂的 D3.js 关系图谱，用于可视化资金流向及异常节点。',
+    jsxCode: `<template><div class="p-8 bg-white text-slate-900"><h3>Financial Graph Placeholder</h3></div></template>`,
+    status: 'pending',
+    templateType: 'vue',
+    industry: 'finance',
+    category: 'Data Visualization',
+    scenario: 'admin',
+    tone: 'modern',
+    copyCount: 0,
+    pointsPerCopy: 200,
+    totalPointsEarned: 0,
+    authorName: 'Sarah Chen',
+    authorAvatar: 'Sarah',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   }
 ];
 
@@ -76,27 +85,42 @@ export const componentService = {
     return new Promise(resolve => setTimeout(() => resolve(mockSubmissions), 500));
   },
 
+  async listAllSubmissions(): Promise<ComponentSubmission[]> {
+    return new Promise(resolve => setTimeout(() => resolve(mockSubmissions), 400));
+  },
+
   async getComponentById(id: number): Promise<ComponentSubmission | null> {
     const item = mockSubmissions.find(s => s.id === id);
     return new Promise(resolve => setTimeout(() => resolve(item || null), 400));
   },
 
+  async updateSubmissionStatus(id: number, data: Partial<ComponentSubmission>): Promise<boolean> {
+    const idx = mockSubmissions.findIndex(s => s.id === id);
+    if (idx > -1) {
+      mockSubmissions[idx] = { ...mockSubmissions[idx], ...data, updatedAt: new Date().toISOString() };
+      return new Promise(resolve => setTimeout(() => resolve(true), 500));
+    }
+    return false;
+  },
+
   async createSubmission(payload: Partial<ComponentSubmission>): Promise<ComponentSubmission> {
-    return { 
+    const newItem = { 
       ...payload, 
       id: Math.floor(Math.random() * 1000), 
       status: 'pending', 
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     } as ComponentSubmission;
+    mockSubmissions.push(newItem);
+    return newItem;
   },
 
   async getOverview(): Promise<ComponentSubmissionOverview> {
     return {
-      total: 156,
-      accepted: 142,
-      rejected: 4,
-      pending: 10,
+      total: mockSubmissions.length,
+      accepted: mockSubmissions.filter(s => s.status === 'accepted').length,
+      rejected: mockSubmissions.filter(s => s.status === 'rejected').length,
+      pending: mockSubmissions.filter(s => s.status === 'pending').length,
       approvalRate: 91,
       lastMonthTotal: 120,
       momPercent: 30
