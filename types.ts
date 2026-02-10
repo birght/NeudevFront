@@ -8,6 +8,13 @@ export enum UserRole {
 
 export type ContributionLevel = 'Bronze' | 'Silver' | 'Gold' | 'Master' | 'Grandmaster';
 
+export interface UserSocials {
+  twitter?: string;
+  linkedin?: string;
+  github?: string;
+  website?: string;
+}
+
 export interface UserProfile {
   id: string;
   name: string;
@@ -19,15 +26,23 @@ export interface UserProfile {
   joinedAt: string;
   submissionCount: number;
   lastActive: string;
+  // 评委增强字段
+  bio?: string;
+  location?: string;
+  socials?: UserSocials;
+  specialties?: string[];
+  coverImage?: string;
+  totalReviewed?: number;
+  averageScore?: number;
 }
 
 export type ComponentSubmissionStatus = 'pending' | 'accepted' | 'rejected' | 'published_unscored';
 
 export interface ScoreBreakdown {
-  design: number;      // 权重 25%
-  code: number;        // 权重 30%
-  usability: number;   // 权重 25%
-  innovation: number;  // 权重 20%
+  design: number;      
+  code: number;        
+  usability: number;   
+  innovation: number;  
 }
 
 export interface ComponentSubmission {
@@ -39,7 +54,6 @@ export interface ComponentSubmission {
   status: ComponentSubmissionStatus;
   templateType: 'vue' | 'html';
   
-  // 评分体系
   score?: number | null; 
   scoreBreakdown?: ScoreBreakdown;
   
@@ -47,16 +61,14 @@ export interface ComponentSubmission {
   appealText?: string | null;
   appealReply?: string | null;
   
-  // 元数据维度
   industry: string;      
   category: string;      
   scenario: string;      
   tone: string;          
   
-  // 经济系统字段
   copyCount: number;        
-  basePrice: number;        // 基础定价 (由组件类型决定)
-  pointsPerCopy: number;    // 最终计算出的解锁积分
+  basePrice: number;        
+  pointsPerCopy: number;    
   totalPointsEarned: number; 
   
   tags?: string[] | null;

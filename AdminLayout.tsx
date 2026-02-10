@@ -5,36 +5,48 @@ import { UserRole } from './types';
 import { 
   LayoutDashboard, 
   PlusCircle, 
-  ClipboardCheck, 
   Layers, 
   ShieldCheck, 
   Star,
   Users,
-  Trophy
+  Trophy,
+  UserCircle,
+  Settings
 } from 'lucide-react';
 
 interface AdminLayoutProps {
   userRole: UserRole;
 }
 
-const PERMISSION_MODULES = [
-  { id: 'overview', name: '社区数据洞察', icon: LayoutDashboard, path: '/admin/overview' },
-  { id: 'contribute', name: '创作新艺术品', icon: PlusCircle, path: '/admin/contribute' },
-  { id: 'my-items', name: '个人贡献资产', icon: Layers, path: '/admin/my-items' },
-  { id: 'moderate', name: '资产审计中心', icon: Trophy, path: '/admin/moderate' },
-  { id: 'users', name: '用户管理中心', icon: Users, path: '/admin/users' },
-  { id: 'roles', name: '角色权限配置', icon: ShieldCheck, path: '/admin/roles' },
-];
-
-const rolePermissions: Record<UserRole, string[]> = {
-  [UserRole.ADMIN]: ['overview', 'contribute', 'my-items', 'moderate', 'users', 'roles'],
-  [UserRole.AUTHOR]: ['overview', 'contribute', 'my-items'],
-  [UserRole.EVALUATOR]: ['overview', 'moderate'], // 评委可以查看概览和审计
-};
-
 const AdminLayout: React.FC<AdminLayoutProps> = ({ userRole }) => {
   const location = useLocation();
-  const visibleModules = PERMISSION_MODULES.filter(m => rolePermissions[userRole].includes(m.id));
+
+  // 定义基础模块
+  const modules = [
+    { id: 'overview', name: '社区数据洞察', icon: LayoutDashboard, path: '/admin/overview', roles: [UserRole.ADMIN, UserRole.AUTHOR, UserRole.EVALUATOR] },
+    { id: 'contribute', name: '创作新艺术品', icon: PlusCircle, path: '/admin/contribute', roles: [UserRole.ADMIN, UserRole.AUTHOR] },
+    { id: 'my-items', name: '个人贡献资产', icon: Layers, path: '/admin/my-items', roles: [UserRole.ADMIN, UserRole.AUTHOR] },
+    { id: 'moderate', name: '资产审计中心', icon: Trophy, path: '/admin/moderate', roles: [UserRole.ADMIN, UserRole.EVALUATOR] },
+    // 动态菜单逻辑
+    { 
+      id: 'judge-management', 
+      name: '评委库管理', 
+      icon: Settings, 
+      path: '/admin/judges', 
+      roles: [UserRole.ADMIN] 
+    },
+    { 
+      id: 'judge-profile', 
+      name: '个人主页编辑', 
+      icon: UserCircle, 
+      path: '/admin/judge-profile', 
+      roles: [UserRole.EVALUATOR] 
+    },
+    { id: 'users', name: '用户管理中心', icon: Users, path: '/admin/users', roles: [UserRole.ADMIN] },
+    { id: 'roles', name: '角色权限配置', icon: ShieldCheck, path: '/admin/roles', roles: [UserRole.ADMIN] },
+  ];
+
+  const visibleModules = modules.filter(m => m.roles.includes(userRole));
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -49,7 +61,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ userRole }) => {
             <Link 
               key={module.id}
               to={module.path} 
-              className={`w-full flex items-center justify-between px-5 py-3.5 rounded-2xl text-sm font-bold transition-all ${location.pathname === module.path ? 'bg-theme text-white shadow-xl shadow-theme/20' : 'text-slate-600 hover:bg-slate-50'}`}
+              className={`w-full flex items-center justify-between px-5 py-3.5 rounded-2xl text-sm font-bold transition-all ${location.pathname.startsWith(module.path) ? 'bg-theme text-white shadow-xl shadow-theme/20' : 'text-slate-600 hover:bg-slate-50'}`}
             >
               <div className="flex items-center gap-3">
                 <module.icon size={18} /> {module.name}

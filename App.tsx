@@ -5,7 +5,9 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Documentation from './pages/Documentation';
 import Components from './pages/Components';
-import ComponentDetail from './pages/ComponentDetail'; // 新增
+import ComponentDetail from './pages/ComponentDetail';
+import Judges from './pages/Judges';
+import JudgeDetail from './pages/JudgeDetail';
 import Designs from './pages/Designs';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminOverview from './pages/admin/Overview';
@@ -14,6 +16,8 @@ import AdminMyItems from './pages/admin/MyItems';
 import AdminModerate from './pages/admin/Moderate';
 import AdminRoles from './pages/admin/Roles';
 import AdminUsers from './pages/admin/Users';
+import AdminJudgeProfileEdit from './pages/admin/JudgeProfileEdit';
+import AdminJudgeManagement from './pages/admin/JudgeManagement';
 import Login from './pages/Login';
 import MotionArt from './pages/MotionArt';
 import UltimateLayouts from './pages/UltimateLayouts';
@@ -26,13 +30,16 @@ import { Mail } from 'lucide-react';
 const App: React.FC = () => {
   const [userRole, setUserRole] = useState<UserRole>(UserRole.DEVELOPER);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const [user, setUser] = useState<{ id: string; name: string; email: string } | null>(null);
 
   const handleLogin = (role: UserRole) => {
     setIsLoggedIn(true);
     setUserRole(role);
+    // 模拟不同角色的 ID
+    const mockId = role === UserRole.ADMIN ? '1' : role === UserRole.EVALUATOR ? '3' : '2';
     setUser({ 
-      name: role === UserRole.ADMIN ? 'Admin User' : 'Dev Hero', 
+      id: mockId,
+      name: role === UserRole.ADMIN ? 'Admin User' : role === UserRole.EVALUATOR ? 'Federica' : 'Dev Hero', 
       email: 'user@devfront.internal' 
     });
   };
@@ -58,6 +65,8 @@ const App: React.FC = () => {
               <Route path="/doces/introduction" element={<Documentation />} />
               <Route path="/components" element={<Components />} />
               <Route path="/components/:id" element={<ComponentDetail />} />
+              <Route path="/judges" element={<Judges />} />
+              <Route path="/judges/:id" element={<JudgeDetail />} />
               <Route path="/designs" element={<Designs />} />
               <Route path="/motion-art" element={<MotionArt />} />
               <Route path="/ultimate-layouts" element={<UltimateLayouts />} />
@@ -72,6 +81,9 @@ const App: React.FC = () => {
                  <Route path="moderate" element={<AdminModerate />} />
                  <Route path="users" element={<AdminUsers />} />
                  <Route path="roles" element={<AdminRoles />} />
+                 <Route path="judges" element={<AdminJudgeManagement />} />
+                 <Route path="judge-profile" element={<AdminJudgeProfileEdit currentUserId={user?.id} />} />
+                 <Route path="judge-profile/:id" element={<AdminJudgeProfileEdit currentUserId={user?.id} />} />
               </Route>
 
               <Route path="/login" element={<Login onLogin={handleLogin} isLoggedIn={isLoggedIn} />} />

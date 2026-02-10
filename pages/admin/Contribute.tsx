@@ -233,12 +233,13 @@ const AdminContribute: React.FC = () => {
                   <button onClick={() => execCommand('insertUnorderedList')} className="p-1.5 hover:bg-white rounded text-slate-500 hover:text-theme"><List size={14} /></button>
                   <button onClick={() => execCommand('justifyLeft')} className="p-1.5 hover:bg-white rounded text-slate-500 hover:text-theme"><AlignLeft size={14} /></button>
                </div>
+               {/* Fixed: Use data-placeholder instead of placeholder to avoid TS error on div */}
                <div 
                  ref={richEditorRef}
                  contentEditable 
                  onInput={() => setForm(prev => ({ ...prev, description: richEditorRef.current?.innerHTML || '' }))}
                  className="p-3 min-h-[80px] max-h-[100px] overflow-y-auto text-[11px] text-slate-600 outline-none leading-relaxed"
-                 placeholder="描述组件解决的痛点及业务场景..."
+                 data-placeholder="描述组件解决的痛点及业务场景..."
                ></div>
             </div>
           </div>
@@ -395,7 +396,7 @@ const AdminContribute: React.FC = () => {
 
           <button 
             onClick={() => { if(!form.title) return alert('请先命名您的作品'); setLoading(true); setTimeout(() => navigate('/admin/my-items'), 1000); }}
-            className="w-full py-4.5 bg-slate-900 text-white text-xs font-black rounded-2xl shadow-2xl hover:bg-black transition-all flex items-center justify-center gap-2 group active:scale-[0.98]"
+            className="w-full py-4.5 bg-slate-900 text-white text-xs font-black rounded-2xl shadow-2xl hover:bg-theme-dark transition-all flex items-center justify-center gap-2 group active:scale-[0.98]"
           >
              {loading ? '正在处理代码资产...' : '发布到组件实验室'} 
              <Zap size={14} className="group-hover:rotate-12 transition-transform" />
@@ -467,12 +468,13 @@ const AdminContribute: React.FC = () => {
         </div>
       </div>
       
+      {/* Fixed: Updated CSS selector to use data-placeholder */}
       <style>{`
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         [contentEditable]:empty:before {
-          content: attr(placeholder);
+          content: attr(data-placeholder);
           color: #94a3b8;
           font-style: italic;
         }

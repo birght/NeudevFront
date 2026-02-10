@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { UserRole } from '../types';
 import { useSettings } from '../context/SettingsContext';
 import { translations } from '../translations';
-import { Settings, LogOut, User, ChevronDown } from 'lucide-react';
+import { Settings, LogOut, User, ChevronDown, Trophy } from 'lucide-react';
 
 interface NavbarProps {
   userRole: UserRole;
@@ -26,6 +26,7 @@ const Navbar: React.FC<NavbarProps> = ({ userRole, isLoggedIn, onRoleSwitch, onL
     { label: t.nav.home, path: '/' },
     { label: t.nav.docs, path: '/doces/introduction' },
     { label: t.nav.components, path: '/components' },
+    { label: '评委', path: '/judges' },
     { label: t.nav.designs, path: '/designs' },
     { label: t.nav.management, path: '/admin' },
   ];
@@ -76,7 +77,6 @@ const Navbar: React.FC<NavbarProps> = ({ userRole, isLoggedIn, onRoleSwitch, onL
           </div>
 
           <div className="flex items-center space-x-4">
-            {/* Settings Dropdown */}
             <div className="relative">
               <button 
                 onClick={() => setShowSettings(!showSettings)}
@@ -120,7 +120,6 @@ const Navbar: React.FC<NavbarProps> = ({ userRole, isLoggedIn, onRoleSwitch, onL
               )}
             </div>
 
-            {/* Avatar & User Menu */}
             <div className="relative" ref={userMenuRef}>
               <button
                 onClick={handleAvatarClick}
@@ -136,7 +135,7 @@ const Navbar: React.FC<NavbarProps> = ({ userRole, isLoggedIn, onRoleSwitch, onL
                 <div className="absolute right-0 mt-2 w-52 bg-white border border-slate-200 rounded-2xl shadow-xl py-2 z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="px-4 py-2 border-b border-slate-50 mb-1">
                     <p className="text-sm font-bold text-slate-900 truncate">
-                      {userRole === UserRole.ADMIN ? 'Administrator' : 'Developer'}
+                      {userRole === UserRole.ADMIN ? 'Administrator' : userRole === UserRole.EVALUATOR ? 'Evaluator' : 'Developer'}
                     </p>
                     <p className="text-[10px] text-slate-400 font-medium">dev@front.internal</p>
                   </div>
