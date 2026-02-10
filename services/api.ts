@@ -28,7 +28,12 @@ let mockUsers: UserProfile[] = [
 
 let mockSubmissions: ComponentSubmission[] = [
   {
-    id: 101, title: '智慧医疗 - 患者生命体征看板', description: '采用高对比度布局设计。', jsxCode: `<template><div>Medical Dashboard</div></template>`, status: 'accepted', templateType: 'vue', score: 9.2, scoreBreakdown: { design: 9.5, code: 9, usability: 9.2, innovation: 8.8 }, industry: 'medical', category: 'Charts & Visualization', scenario: 'dashboard', tone: 'dark-tech', copyCount: 154, basePrice: 50, pointsPerCopy: 58, totalPointsEarned: 7700, authorName: 'Alex Rivera', authorAvatar: 'Alex', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
+    id: 101, title: '智慧医疗 - 患者生命体征看板', description: '采用高对比度布局设计，适配 4K 医疗监护屏。', jsxCode: `<template>\n  <div class="p-8 text-center bg-slate-900 rounded-3xl border border-white/10">\n    <h3 class="text-emerald-400 font-black text-2xl mb-4">HEART RATE: 72 BPM</h3>\n    <div class="h-20 bg-emerald-500/10 rounded-xl flex items-center justify-center border border-emerald-500/20">\n       <span class="text-emerald-500 animate-pulse text-sm font-mono tracking-widest">WAVEFORM ACTIVE</span>\n    </div>\n  </div>\n</template>`, 
+    status: 'accepted', templateType: 'vue', score: 9.2, scoreBreakdown: { design: 9.5, code: 9, usability: 9.2, innovation: 8.8 }, industry: 'medical', category: 'Charts & Visualization', scenario: 'dashboard', tone: 'dark-tech', copyCount: 154, basePrice: 50, pointsPerCopy: 58, totalPointsEarned: 7700, authorName: 'Alex Rivera', authorAvatar: 'Alex', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
+  },
+  {
+    id: 102, title: '金融资产 - 动态波动交易卡片', description: '极简风格的实时汇率卡片。', jsxCode: `<template>\n  <div class="p-6 bg-white border border-slate-100 rounded-[2rem] shadow-xl">\n    <div class="flex justify-between items-center mb-4">\n      <span class="text-xs font-black text-slate-400 uppercase">BTC / USDT</span>\n      <span class="text-emerald-500 font-bold">+4.2%</span>\n    </div>\n    <div class="text-3xl font-black text-slate-900 tabular-nums">48,294.02</div>\n  </div>\n</template>`, 
+    status: 'pending', templateType: 'vue', industry: 'finance', category: 'Display', scenario: 'app', tone: 'modern', copyCount: 0, basePrice: 50, pointsPerCopy: 50, totalPointsEarned: 0, authorName: 'Sarah Chen', authorAvatar: 'Sarah', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
   }
 ];
 
