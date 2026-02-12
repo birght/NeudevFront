@@ -14,7 +14,8 @@ import {
   Settings,
   Menu,
   X,
-  ChevronRight
+  ChevronRight,
+  Settings2
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -34,6 +35,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ userRole }) => {
     { id: 'judge-profile', name: '个人主页编辑', icon: UserCircle, path: '/admin/judge-profile', roles: [UserRole.EVALUATOR] },
     { id: 'users', name: '用户管理中心', icon: Users, path: '/admin/users', roles: [UserRole.ADMIN] },
     { id: 'roles', name: '角色权限配置', icon: ShieldCheck, path: '/admin/roles', roles: [UserRole.ADMIN] },
+    { id: 'system', name: '系统综合配置', icon: Settings2, path: '/admin/system', roles: [UserRole.ADMIN] },
   ];
 
   const visibleModules = modules.filter(m => m.roles.includes(userRole));
@@ -77,7 +79,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ userRole }) => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10">
       <div className="flex flex-col lg:flex-row gap-8">
         
-        {/* 移动端顶部状态条 (确保在 Navbar 下方，且不会被全屏菜单覆盖) */}
+        {/* 移动端顶部状态条 */}
         <div className="lg:hidden flex items-center justify-between bg-white/95 backdrop-blur px-5 py-4 rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] sticky top-[72px] z-[40] transition-all">
            <div className="flex items-center gap-3">
               <div className="p-2 bg-theme text-white rounded-xl shadow-lg shadow-theme/10">
@@ -95,7 +97,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ userRole }) => {
            </button>
         </div>
 
-        {/* 移动端侧边抽屉 (z-index 高于状态条) */}
+        {/* 移动端侧边抽屉 */}
         {isMobileMenuOpen && (
           <div className="lg:hidden fixed inset-0 z-[120] animate-in fade-in duration-300">
              <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>

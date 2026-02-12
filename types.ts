@@ -26,7 +26,6 @@ export interface UserProfile {
   joinedAt: string;
   submissionCount: number;
   lastActive: string;
-  // 评委增强字段
   bio?: string;
   location?: string;
   socials?: UserSocials;
@@ -34,6 +33,18 @@ export interface UserProfile {
   coverImage?: string;
   totalReviewed?: number;
   averageScore?: number;
+}
+
+// 新增：邀请码类型
+export type InvitationStatus = 'active' | 'used' | 'expired';
+
+export interface InvitationCode {
+  id: string;
+  code: string;
+  status: InvitationStatus;
+  expiresAt: string;
+  createdAt: string;
+  usedBy?: string;
 }
 
 export type ComponentSubmissionStatus = 'pending' | 'accepted' | 'rejected' | 'published_unscored';
@@ -53,26 +64,21 @@ export interface ComponentSubmission {
   coverImage?: string | null;
   status: ComponentSubmissionStatus;
   templateType: 'vue' | 'html';
-  
   score?: number | null; 
   scoreBreakdown?: ScoreBreakdown;
-  
   rejectReason?: string | null;
   appealText?: string | null;
   appealReply?: string | null;
-  
   industry: string;      
   category: string;      
   scenario: string;      
   tone: string;          
-  
   copyCount: number;        
   basePrice: number;        
   pointsPerCopy: number;    
   totalPointsEarned: number; 
-  
   tags?: string[] | null;
-  dependencies?: string[]; // 新增：远程依赖列表，如 ["three", "gsap"]
+  dependencies?: string[];
   createdAt: string;
   updatedAt: string;
   authorName?: string;

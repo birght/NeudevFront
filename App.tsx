@@ -18,6 +18,7 @@ import AdminRoles from './pages/admin/Roles';
 import AdminUsers from './pages/admin/Users';
 import AdminJudgeProfileEdit from './pages/admin/JudgeProfileEdit';
 import AdminJudgeManagement from './pages/admin/JudgeManagement';
+import AdminSystemSettings from './pages/admin/SystemSettings';
 import Login from './pages/Login';
 import MotionArt from './pages/MotionArt';
 import UltimateLayouts from './pages/UltimateLayouts';
@@ -25,7 +26,6 @@ import InteractionLab from './pages/InteractionLab';
 import VisualExpression from './pages/VisualExpression';
 import { UserRole } from './types';
 import { SettingsProvider } from './context/SettingsContext';
-import { Mail } from 'lucide-react';
 
 const App: React.FC = () => {
   const [userRole, setUserRole] = useState<UserRole>(UserRole.DEVELOPER);
@@ -35,7 +35,6 @@ const App: React.FC = () => {
   const handleLogin = (role: UserRole) => {
     setIsLoggedIn(true);
     setUserRole(role);
-    // 模拟不同角色的 ID
     const mockId = role === UserRole.ADMIN ? '1' : role === UserRole.EVALUATOR ? '3' : '2';
     setUser({ 
       id: mockId,
@@ -83,7 +82,7 @@ const App: React.FC = () => {
                  <Route path="roles" element={<AdminRoles />} />
                  <Route path="judges" element={<AdminJudgeManagement />} />
                  <Route path="judge-profile" element={<AdminJudgeProfileEdit currentUserId={user?.id} />} />
-                 <Route path="judge-profile/:id" element={<AdminJudgeProfileEdit currentUserId={user?.id} />} />
+                 <Route path="system" element={<AdminSystemSettings />} />
               </Route>
 
               <Route path="/login" element={<Login onLogin={handleLogin} isLoggedIn={isLoggedIn} />} />

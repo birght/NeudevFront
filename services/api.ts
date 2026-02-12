@@ -4,10 +4,16 @@ import {
   ComponentSubmissionOverview, 
   ComponentSubmissionTrendPoint,
   UserProfile,
-  UserRole
+  UserRole,
+  InvitationCode
 } from '../types';
 
-// 初始模拟用户/评委数据
+let mockInvitationCodes: InvitationCode[] = [
+  { id: '1', code: 'DEV-8829-XJ21', status: 'active', expiresAt: '2025-12-31', createdAt: '2024-03-20' },
+  { id: '2', code: 'ADM-1102-LL99', status: 'used', expiresAt: '2024-12-31', createdAt: '2024-01-10', usedBy: 'Alex Rivera' },
+  { id: '3', code: 'EVL-4452-PQ01', status: 'expired', expiresAt: '2024-02-01', createdAt: '2024-01-01' },
+];
+
 let mockUsers: UserProfile[] = [
   { 
     id: '1', name: 'Alex Rivera', email: 'admin@devfront.com', role: UserRole.ADMIN, points: 2500, level: 'Master', avatarSeed: 'Alex', joinedAt: '2024-01-15', submissionCount: 45, lastActive: '2分钟前',
@@ -19,10 +25,6 @@ let mockUsers: UserProfile[] = [
   { 
     id: '3', name: 'Federica Gandolfo', email: 'evaluator@devfront.com', role: UserRole.EVALUATOR, points: 3400, level: 'Grandmaster', avatarSeed: 'Federica', joinedAt: '2023-11-20', submissionCount: 12, lastActive: '刚刚',
     bio: 'UX Designer & Creative Frontend Developer. I believe in the power of micro-interactions and functional art.', location: 'Milan, Italy', socials: { twitter: '@federica_g', linkedin: 'federica-gandolfo', website: 'federica.io' }, specialties: ['Micro-interactions', 'Motion Art', 'Design Systems'], totalReviewed: 286, averageScore: 8.8
-  },
-  { 
-    id: '4', name: 'James Wilson', email: 'wilson@devfront.com', role: UserRole.EVALUATOR, points: 1800, level: 'Master', avatarSeed: 'James', joinedAt: '2024-01-05', submissionCount: 8, lastActive: '5小时前',
-    bio: 'System Architect at Heart. Auditing code for scalability and performance is my passion.', location: 'London, UK', socials: { github: 'jwilson-tech', website: 'wilson.tech' }, specialties: ['React', 'Performance', 'Infrastructure'], totalReviewed: 156, averageScore: 9.3
   }
 ];
 
@@ -30,14 +32,35 @@ let mockSubmissions: ComponentSubmission[] = [
   {
     id: 101, title: '智慧医疗 - 患者生命体征看板', description: '采用高对比度布局设计，适配 4K 医疗监护屏。', jsxCode: `<template>\n  <div class="p-8 text-center bg-slate-900 rounded-3xl border border-white/10">\n    <h3 class="text-emerald-400 font-black text-2xl mb-4">HEART RATE: 72 BPM</h3>\n    <div class="h-20 bg-emerald-500/10 rounded-xl flex items-center justify-center border border-emerald-500/20">\n       <span class="text-emerald-500 animate-pulse text-sm font-mono tracking-widest">WAVEFORM ACTIVE</span>\n    </div>\n  </div>\n</template>`, 
     status: 'accepted', templateType: 'vue', score: 9.2, scoreBreakdown: { design: 9.5, code: 9, usability: 9.2, innovation: 8.8 }, industry: 'medical', category: 'Charts & Visualization', scenario: 'dashboard', tone: 'dark-tech', copyCount: 154, basePrice: 50, pointsPerCopy: 58, totalPointsEarned: 7700, authorName: 'Alex Rivera', authorAvatar: 'Alex', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
-  },
-  {
-    id: 102, title: '金融资产 - 动态波动交易卡片', description: '极简风格的实时汇率卡片。', jsxCode: `<template>\n  <div class="p-6 bg-white border border-slate-100 rounded-[2rem] shadow-xl">\n    <div class="flex justify-between items-center mb-4">\n      <span class="text-xs font-black text-slate-400 uppercase">BTC / USDT</span>\n      <span class="text-emerald-500 font-bold">+4.2%</span>\n    </div>\n    <div class="text-3xl font-black text-slate-900 tabular-nums">48,294.02</div>\n  </div>\n</template>`, 
-    status: 'pending', templateType: 'vue', industry: 'finance', category: 'Display', scenario: 'app', tone: 'modern', copyCount: 0, basePrice: 50, pointsPerCopy: 50, totalPointsEarned: 0, authorName: 'Sarah Chen', authorAvatar: 'Sarah', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
   }
 ];
 
 export const componentService = {
+  // 邀请码管理
+  async listInvitationCodes(): Promise<InvitationCode[]> {
+    return new Promise(resolve => setTimeout(() => resolve([...mockInvitationCodes]), 400));
+  },
+  async createInvitationCodes(count: number, days: number): Promise<InvitationCode[]> {
+    const newCodes: InvitationCode[] = Array.from({ length: count }).map(() => {
+      const code = `DEV-${Math.floor(Math.random() * 9000 + 1000)}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+      const expiry = new Date();
+      expiry.setDate(expiry.getDate() + days);
+      return {
+        id: Math.random().toString(36).substring(7),
+        code,
+        status: 'active',
+        expiresAt: expiry.toISOString().split('T')[0],
+        createdAt: new Date().toISOString().split('T')[0]
+      };
+    });
+    mockInvitationCodes = [...newCodes, ...mockInvitationCodes];
+    return new Promise(resolve => setTimeout(() => resolve(newCodes), 600));
+  },
+  async deleteInvitationCode(id: string): Promise<boolean> {
+    mockInvitationCodes = mockInvitationCodes.filter(c => c.id !== id);
+    return new Promise(resolve => setTimeout(() => resolve(true), 300));
+  },
+
   async listMySubmissions(): Promise<ComponentSubmission[]> {
     return new Promise(resolve => setTimeout(() => resolve(mockSubmissions), 500));
   },
